@@ -79,10 +79,13 @@ class OnlineDiscIdentifier:
                 logger.warning("Reading TMDB API key from config file. "
                              "Consider using TMDB_API_KEY environment variable instead for better security.")
         
+        # Check if metadata lookup is enabled
+        lookup_enabled = self.config.get('metadata', {}).get('lookup_enabled', True)
+        
         if self.tmdb_api_key and TMDB_AVAILABLE:
             tmdb.API_KEY = self.tmdb_api_key
             logger.info("TMDB API configured for metadata lookup")
-        elif not self.tmdb_api_key and self.config.get('metadata', {}).get('lookup_enabled', True):
+        elif not self.tmdb_api_key and lookup_enabled:
             logger.info("TMDB API key not set. Set TMDB_API_KEY environment variable or add to config file.")
     
     def calculate_disc_id(self, disc_path: str) -> Optional[str]:
