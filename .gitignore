@@ -56,3 +56,6 @@ config.yml
 
 # MakeMKV temporary files
 makemkv_*.log
+
+# Logs
+*.log
