@@ -8,8 +8,8 @@
 
 set -e
 
-# Configuration
-SERIES_TITLE="Breaking Bad"
+# Configuration - Replace with your TV series information
+SERIES_TITLE="Your TV Series Name"
 SEASON_NUMBER=1
 NUM_DISCS=2  # Number of discs in this season
 OUTPUT_DIR="$HOME/TV Shows"

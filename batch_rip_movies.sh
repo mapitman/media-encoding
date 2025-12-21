@@ -9,10 +9,11 @@
 set -e
 
 # Define your movies here (format: "Title:Year")
+# Replace these examples with your actual movie collection
 MOVIES=(
-    "The Matrix:1999"
-    "Inception:2010"
-    "The Dark Knight:2008"
+    "Movie Title 1:2024"
+    "Movie Title 2:2023"
+    "Movie Title 3:2022"
 )
 
 # Configuration

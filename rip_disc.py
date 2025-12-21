@@ -15,15 +15,6 @@ import sys
 from pathlib import Path
 from typing import List, Dict, Optional, Tuple
 
-try:
-    import yaml
-    YAML_AVAILABLE = True
-except ImportError:
-    YAML_AVAILABLE = False
-    logger = logging.getLogger(__name__)
-    logger.warning("PyYAML not installed. Configuration file support disabled. "
-                  "Install with: pip install pyyaml")
-
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -31,12 +22,23 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+try:
+    import yaml
+    YAML_AVAILABLE = True
+except ImportError:
+    YAML_AVAILABLE = False
+    logger.warning("PyYAML not installed. Configuration file support disabled. "
+                  "Install with: pip install pyyaml")
+
 # Constants
 MIN_EPISODE_DURATION_SECONDS = 1200  # 20 minutes
 MAX_EPISODE_DURATION_SECONDS = 3600  # 60 minutes
 MIN_MOVIE_DURATION_SECONDS = 2700    # 45 minutes
+MIN_EPISODE_CHAPTERS = 1              # Minimum chapters to consider as episode
 
 # Regex pattern for sanitizing filenames
+# Removes: < > : " / \ | ? * (Windows/Linux reserved chars)
+# and control characters \x00-\x1f (ASCII 0-31)
 FILENAME_SANITIZE_PATTERN = re.compile(r'[<>:"/\\|?*\x00-\x1f]')
 
 
@@ -242,7 +244,7 @@ class DiscRipper:
             for title in titles:
                 duration = title.get('duration', 0)
                 if (MIN_EPISODE_DURATION_SECONDS <= duration <= MAX_EPISODE_DURATION_SECONDS 
-                    and title.get('chapters', 0) >= 1):
+                    and title.get('chapters', 0) >= MIN_EPISODE_CHAPTERS):
                     episodes.append(int(title['id']))
             
             # Sort by title ID to maintain episode order
