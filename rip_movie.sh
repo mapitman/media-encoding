@@ -10,7 +10,7 @@ set -e
 # Default values
 DISC="disc:0"
 OUTPUT_DIR=""
-TEMP_DIR="/tmp/makemkv"
+TEMP_DIR=""
 TITLE=""
 YEAR=""
 
@@ -43,7 +43,7 @@ while [[ $# -gt 0 ]]; do
             echo "Options:"
             echo "  --disc DISC        Disc path (default: disc:0)"
             echo "  --output DIR       Output directory (required)"
-            echo "  --temp DIR         Temporary directory (default: /tmp/makemkv)"
+            echo "  --temp DIR         Temporary directory (default: OUTPUT_DIR/.makemkv)"
             echo "  --title TITLE      Movie title"
             echo "  --year YEAR        Release year"
             echo "  --help             Show this help message"
@@ -62,6 +62,11 @@ if [ -z "$OUTPUT_DIR" ]; then
     echo "Error: --output is required"
     echo "Use --help for usage information"
     exit 1
+fi
+
+# Default temp directory inside output if not provided
+if [ -z "$TEMP_DIR" ]; then
+    TEMP_DIR="$OUTPUT_DIR/.makemkv"
 fi
 
 # Build command array
@@ -85,4 +90,5 @@ fi
 
 # Execute
 echo "Ripping movie disc..."
+echo "Using temp directory: $TEMP_DIR"
 "${CMD_ARGS[@]}"

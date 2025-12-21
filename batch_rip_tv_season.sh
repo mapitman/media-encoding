@@ -13,7 +13,7 @@ SERIES_TITLE="Your TV Series Name"
 SEASON_NUMBER=1
 NUM_DISCS=2  # Number of discs in this season
 OUTPUT_DIR="$HOME/TV Shows"
-TEMP_DIR="/tmp/makemkv"
+TEMP_DIR="$OUTPUT_DIR/.makemkv"
 
 echo "==================================="
 echo "Batch TV Season Ripping Script"

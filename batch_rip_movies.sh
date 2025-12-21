@@ -18,7 +18,7 @@ MOVIES=(
 
 # Configuration
 OUTPUT_DIR="$HOME/Movies"
-TEMP_DIR="/tmp/makemkv"
+TEMP_DIR="$OUTPUT_DIR/.makemkv"
 
 echo "==================================="
 echo "Batch Movie Ripping Script"

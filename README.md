@@ -44,7 +44,17 @@ Tools and scripts for ripping, encoding and organizing media files from DVDs, Bl
    brew install python3
    ```
 
-4. **Python dependencies** - Required libraries for functionality
+4. **libdiscid** (Optional but recommended) - For disc ID calculation
+   ```bash
+   # Ubuntu/Debian
+   sudo apt-get install libdiscid0 libdiscid-dev
+   
+   # After installing system library:
+   pip install discid
+   ```
+   Enables MusicBrainz disc ID lookups for better metadata identification.
+
+5. **Python dependencies** - Required libraries for functionality
    ```bash
    pip install -r requirements.txt
    ```
@@ -53,8 +63,11 @@ Tools and scripts for ripping, encoding and organizing media files from DVDs, Bl
    - `pyyaml` - YAML configuration file support
    - `requests` - Online disc identification
    - `tmdbsimple` - TMDB metadata lookup
+   
+   **Optional packages:**
+   - `discid` - Disc ID calculation for MusicBrainz lookups
 
-5. **TMDB API Key** (Optional but recommended) - For online metadata lookup
+6. **TMDB API Key** (Optional but recommended) - For online metadata lookup
    - Sign up for a free account at [TMDB](https://www.themoviedb.org/signup)
    - Get your API key at [TMDB API Settings](https://www.themoviedb.org/settings/api)
    - **Recommended:** Set it as an environment variable:
@@ -77,8 +90,13 @@ Tools and scripts for ripping, encoding and organizing media files from DVDs, Bl
    cd media-encoding
    ```
 
-2. Install Python dependencies:
+2. Create and activate virtual environment (recommended):
    ```bash
+   make venv
+   make install
+   # Or manually:
+   python3 -m venv venv
+   source venv/bin/activate
    pip install -r requirements.txt
    ```
 
@@ -89,8 +107,21 @@ Tools and scripts for ripping, encoding and organizing media files from DVDs, Bl
 
 4. Verify dependencies are installed:
    ```bash
+   source venv/bin/activate
    ./rip_disc.py --help
    ```
+
+### Makefile Targets
+
+For convenience, use Make to manage the virtual environment:
+
+```bash
+make help          # Show all available targets
+make install       # Create venv and install dependencies
+make shell         # Activate venv in a new shell
+make rip-movie     # Rip a movie (use OUTPUT=~/Videos)
+make clean         # Remove virtual environment
+```
 
 ## Usage
 
@@ -105,7 +136,7 @@ Use the `rip_movie.sh` script for movie discs:
 **Options:**
 - `--disc DISC` - Disc path (default: `disc:0` for first drive)
 - `--output DIR` - Output directory (required)
-- `--temp DIR` - Temporary directory (default: `/tmp/makemkv`)
+- `--temp DIR` - Temporary directory (default: `OUTPUT_DIR/.makemkv`)
 - `--title TITLE` - Movie title for naming
 - `--year YEAR` - Release year for naming
 
@@ -132,7 +163,7 @@ Use the `rip_tv.sh` script for TV series discs:
 **Options:**
 - `--disc DISC` - Disc path (default: `disc:0`)
 - `--output DIR` - Output directory (required)
-- `--temp DIR` - Temporary directory (default: `/tmp/makemkv`)
+- `--temp DIR` - Temporary directory (default: `OUTPUT_DIR/.makemkv`)
 - `--title TITLE` - TV series title for naming
 - `--season NUM` - Season number (default: 1)
 
