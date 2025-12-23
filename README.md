@@ -2,6 +2,63 @@
 
 Tools and scripts for ripping, encoding and organizing media files from DVDs, Blu-Ray, and Blu-Ray UltraHD discs.
 
+## Quick Start
+
+```bash
+# 1) Set up the virtual environment
+make install
+
+# 2) Open an activated shell
+make activate
+
+# Or activate in your current shell (zsh/bash)
+source venv/bin/activate
+
+# 3) Try a command
+./rip_disc.py --help
+```
+
+Tip: `make activate` starts a new interactive shell with the venv already activated; type `exit` to return to your original shell.
+
+### Make Targets
+
+- **activate:** Start an interactive shell with the venv activated (exit to return).
+- **rip-movie:** Activate venv and run `rip_movie.sh` (use `OUTPUT=/path` and `EXTRA_ARGS`).
+- **rip-tv:** Activate venv and run `rip_tv.sh` (use `OUTPUT=/path` and `EXTRA_ARGS`).
+- **install:** Create venv and install dependencies.
+- **clean:** Remove the virtual environment.
+
+### Environment Variables
+
+**TMDB_API_KEY** (Optional but recommended)
+
+For automatic online metadata lookup (movie titles, years, TV series info):
+
+```bash
+# Set your TMDB API key (get a free key at https://www.themoviedb.org/settings/api)
+export TMDB_API_KEY="your_api_key_here"
+
+# Then the scripts will automatically look up and name files correctly
+./rip_movie.sh --title "inception" --output ~/Movies
+# Output: Inception (2010).mkv (with correct capitalization and year)
+```
+
+**OMDB_API_KEY** (Optional)
+
+For additional metadata lookup via the Open Movie Database:
+
+```bash
+# Set your OMDB API key (get a free key at https://www.omdbapi.com/apikey.aspx)
+export OMDB_API_KEY="your_api_key_here"
+```
+
+To make environment variables permanent, add to your shell config (`~/.bashrc`, `~/.zshrc`, etc.):
+
+```bash
+export TMDB_API_KEY="your_tmdb_api_key_here"
+export OMDB_API_KEY="your_omdb_api_key_here"
+```
+
 ## Features
 
 - **Automatic disc scanning** - Detects and analyzes all titles on the disc
@@ -67,14 +124,15 @@ Tools and scripts for ripping, encoding and organizing media files from DVDs, Bl
    **Optional packages:**
    - `discid` - Disc ID calculation for MusicBrainz lookups
 
-6. **TMDB API Key** (Optional but recommended) - For online metadata lookup
-   - Sign up for a free account at [TMDB](https://www.themoviedb.org/signup)
-   - Get your API key at [TMDB API Settings](https://www.themoviedb.org/settings/api)
-   - **Recommended:** Set it as an environment variable:
+6. **API Keys** (Optional but recommended) - For online metadata lookup
+   - **TMDB**: Sign up for a free account at [TMDB](https://www.themoviedb.org/signup), get your API key at [TMDB API Settings](https://www.themoviedb.org/settings/api)
+   - **OMDB**: Sign up at [OMDB](https://www.omdbapi.com/apikey.aspx)
+   - **Recommended:** Set them as environment variables:
      ```bash
-     export TMDB_API_KEY="your_api_key_here"
+     export TMDB_API_KEY="your_tmdb_api_key"
+     export OMDB_API_KEY="your_omdb_api_key"
      ```
-   - Alternative: Add it to your `config.yaml` file (less secure)
+   - Alternative: Add them to your `config.yaml` file (less secure)
 
 ### Hardware Requirements
 
@@ -118,12 +176,34 @@ For convenience, use Make to manage the virtual environment:
 ```bash
 make help          # Show all available targets
 make install       # Create venv and install dependencies
-make shell         # Activate venv in a new shell
+make activate      # Start an interactive shell with venv activated
+make rip-tv        # Rip a TV disc (use OUTPUT=~/Videos)
 make rip-movie     # Rip a movie (use OUTPUT=~/Videos)
 make clean         # Remove virtual environment
 ```
 
+#### Activation Behavior
+
+- `make activate` starts a new interactive shell that is already activated. Type `exit` to return to your original shell.
+- To activate in your current shell session without starting a new one: `source venv/bin/activate` (zsh/bash) or `. venv/bin/activate` (POSIX sh).
+- Internally, recipes run under bash for consistency (see [Makefile](Makefile)); this does not affect how you activate the venv in your shell.
+
 ## Usage
+
+### Usage via Make
+
+For common workflows, you can use Make targets:
+
+```bash
+# Open an activated virtualenv shell
+make activate
+
+# Rip a movie (override output and pass extra args)
+make rip-movie OUTPUT=~/Movies EXTRA_ARGS='--title "The Matrix" --year 1999'
+
+# Rip a TV season disc
+make rip-tv OUTPUT=~/TV EXTRA_ARGS='--title "Breaking Bad" --season 1'
+```
 
 ### Ripping a Movie
 
@@ -243,6 +323,84 @@ The batch scripts will prompt you to insert each disc in sequence, making it eas
 
 ## How It Works
 
+### Media Ripping Workflow
+
+The script follows this workflow for both movies and TV series:
+
+```mermaid
+flowchart TD
+    A["Insert Disc"] --> B["Scan Disc"]
+    B --> C["Identify Content"]
+    C --> D{Content Type?}
+    D -->|Movie| E["Find Longest Title<br/>45+ minutes"]
+    D -->|TV Series| F["Find Episodes<br/>20-50 minutes each"]
+    E --> G["Select Tracks"]
+    F --> G
+    G --> H["Choose Video<br/>Highest Resolution"]
+    H --> I["Choose Audio<br/>English Stereo & Surround"]
+    I --> J["Choose Subtitles<br/>English Tracks"]
+    J --> K["Generate Output<br/>MKV File"]
+    K --> L["Output to<br/>Specified Directory"]
+    L --> M["Complete"]
+    
+    style A fill:#e1f5ff,color:#000
+    style M fill:#c8e6c9,color:#000
+    style G fill:#fff9c4,color:#000
+    style K fill:#fff9c4,color:#000
+```
+
+### Component Architecture
+
+The ripping system integrates multiple tools and services:
+
+```mermaid
+flowchart LR
+    User["User<br/>Terminal"] --> Make["make activate/<br/>make rip-movie/<br/>make rip-tv"]
+    Make --> Venv["Virtual Env<br/>Created/Activated"]
+    Venv --> Script["rip_movie.sh<br/>or<br/>rip_tv.sh"]
+    Script --> Disc["rip_disc.py<br/>Main Script"]
+    Disc --> MakeMKV["makemkvcon<br/>Disc Scanning"]
+    Disc --> FFmpeg["ffmpeg<br/>Track Selection"]
+    Disc --> TMDB["TMDB API<br/>Metadata Lookup"]
+    Disc --> OMDB["OMDB API<br/>Additional Metadata"]
+    MakeMKV --> Output["Output MKV<br/>in OUTPUT Dir"]
+    FFmpeg --> Output
+    TMDB --> Output
+    OMDB --> Output
+    
+    style User fill:#e3f2fd,color:#000
+    style Make fill:#f3e5f5,color:#000
+    style Venv fill:#e8f5e9,color:#000
+    style Script fill:#fff3e0,color:#000
+    style Output fill:#fce4ec,color:#000
+```
+
+### Activation Sequence
+
+When you run `make activate`, here's what happens:
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant Terminal
+    participant Makefile
+    participant Venv as Virtual Env
+    participant Shell
+    
+    User->>Terminal: make activate
+    Terminal->>Makefile: Execute target
+    Makefile->>Venv: Create/Check venv
+    Venv-->>Makefile: OK
+    Makefile->>Shell: Launch activated shell
+    Shell-->>User: Interactive prompt
+    User->>Shell: (commands in venv)
+    Shell->>Shell: (type 'exit' to return)
+    Shell-->>Terminal: Return control
+    Terminal-->>User: Back to original shell
+```
+
+## How It Works
+
 ### 1. Disc Scanning
 
 The script uses `makemkvcon` to scan the disc and gather information about all titles, including:
@@ -326,47 +484,50 @@ Configuration values can be overridden by command-line arguments.
 
 ### Online Metadata Lookup
 
-The script can automatically fetch movie and TV series metadata from TMDB (The Movie Database) to ensure accurate file naming and metadata:
+The script can automatically fetch movie and TV series metadata from OMDB (Open Movie Database) and TMDB (The Movie Database) to ensure accurate file naming and metadata. **OMDB is tried first; TMDB is used as a fallback if OMDB is unavailable.**
 
-1. **Get a TMDB API Key:**
+1. **Get API Keys:**
+   
+   **OMDB (Primary):**
+   - Sign up at [https://www.omdbapi.com/apikey.aspx](https://www.omdbapi.com/apikey.aspx)
+   - Choose a plan (free plan available)
+   - Copy your API key
+   
+   **TMDB (Fallback):**
    - Sign up at [https://www.themoviedb.org/signup](https://www.themoviedb.org/signup)
    - Navigate to [API Settings](https://www.themoviedb.org/settings/api)
    - Request an API key (choose "Developer" option)
    - Copy your API key
 
-2. **Configure the API Key (Recommended Method - Environment Variable):**
-   Set it as an environment variable for better security:
+2. **Configure the API Keys (Recommended Method - Environment Variables):**
+   Set them as environment variables for better security:
    ```bash
    # Linux/macOS - Add to ~/.bashrc or ~/.zshrc for persistence
-   export TMDB_API_KEY="your_api_key_here"
-   
-   # Windows (Command Prompt)
-   set TMDB_API_KEY=your_api_key_here
-   
-   # Windows (PowerShell)
-   $env:TMDB_API_KEY="your_api_key_here"
+   export OMDB_API_KEY="your_omdb_api_key_here"
+   export TMDB_API_KEY="your_tmdb_api_key_here"
    ```
    
    **Alternative Method - Config File (Less Secure):**
-   Add it to your `config.yaml`:
+   Add them to your `config.yaml`:
    ```yaml
    metadata:
      lookup_enabled: true
-     tmdb_api_key: "your_api_key_here"
+     omdb_api_key: "your_omdb_api_key_here"
+     tmdb_api_key: "your_tmdb_api_key_here"
    ```
    
-   **Note:** The environment variable takes precedence over the config file. Using environment variables is more secure as they won't be accidentally committed to version control.
+   **Note:** Environment variables take precedence over config file values. Using environment variables is more secure as they won't be accidentally committed to version control.
 
 3. **Features:**
-   - Automatic movie title and year lookup
-   - TV series name and season information
-   - Enhanced metadata (genres, ratings, descriptions)
+   - **OMDB (Primary)**: Movie and TV metadata, IMDb ID lookups, ratings, alternative titles
+   - **TMDB (Fallback)**: Automatic movie title and year lookup, TV series name and season information, enhanced metadata (genres, ratings, descriptions)
    - Accurate file naming based on official titles
    - Disc identification using MusicBrainz (when available)
+   - **Lookup Order**: OMDB is queried first; if unavailable or no match found, TMDB is used as fallback
 
 4. **Usage:**
    ```bash
-   # The script will automatically look up metadata
+   # The script will automatically look up metadata using available API keys
    ./rip_movie.sh --title "inception" --output ~/Movies
    # Output: Inception (2010).mkv (with correct capitalization and year)
    
@@ -375,7 +536,7 @@ The script can automatically fetch movie and TV series metadata from TMDB (The M
    # Output: Breaking Bad - S01E01.mkv, Breaking Bad - S01E02.mkv, etc.
    ```
 
-If metadata lookup is disabled or fails, the script falls back to using the disc title.
+If metadata lookup is disabled or both services are unavailable, the script falls back to using the disc title.
 
 ### Temporary Directory
 
@@ -445,15 +606,29 @@ sudo ./rip_movie.sh --title "Movie" --output ~/Movies
 
 ## Advanced Features
 
-### Metadata Lookup (Future Enhancement)
+### Metadata Lookup
 
-The script includes a placeholder for online metadata lookup. To implement:
+The script supports online metadata lookup from OMDB (primary) and TMDB (fallback) APIs. **OMDB is queried first; TMDB is used if OMDB is unavailable or finds no match.**
 
-1. Sign up for a TMDB API key: https://www.themoviedb.org/settings/api
-2. Modify the `lookup_metadata()` function in `rip_disc.py`
-3. Install required Python packages: `pip install tmdbsimple`
+**To enable:**
 
-This will enable automatic fetching of plot summaries, cast information, and accurate titles/years.
+1. Get API keys:
+   - OMDB (primary): https://www.omdbapi.com/apikey.aspx
+   - TMDB (fallback): https://www.themoviedb.org/settings/api
+
+2. Set environment variables:
+   ```bash
+   export OMDB_API_KEY="your_omdb_api_key"
+   export TMDB_API_KEY="your_tmdb_api_key"
+   ```
+
+3. Or add to `config.yaml`:
+   ```yaml
+   metadata:
+     lookup_enabled: true
+     omdb_api_key: "your_omdb_api_key"
+     tmdb_api_key: "your_tmdb_api_key"
+   ```
 
 ### Custom Track Selection
 

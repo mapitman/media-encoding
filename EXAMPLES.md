@@ -60,6 +60,19 @@ export TMDB_API_KEY="your_tmdb_api_key_here"
 
 ## Basic Examples
 
+### Using Make Targets
+
+```bash
+# Open an activated virtualenv shell
+make activate
+
+# Rip a movie using Make (outputs to ~/Movies)
+make rip-movie OUTPUT=~/Movies EXTRA_ARGS='--title "The Matrix" --year 1999'
+
+# Rip a TV season disc using Make (outputs to ~/TV)
+make rip-tv OUTPUT=~/TV EXTRA_ARGS='--title "Breaking Bad" --season 1'
+```
+
 ### Rip a Single Movie
 
 ```bash
