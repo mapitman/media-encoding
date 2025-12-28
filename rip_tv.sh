@@ -14,6 +14,7 @@ TEMP_DIR=""
 TITLE=""
 YEAR=""
 SEASON="1"
+EPISODE_START="1"
 DISC_TYPE=""
 
 # Parse arguments
@@ -39,6 +40,10 @@ while [[ $# -gt 0 ]]; do
             SEASON="$2"
             shift 2
             ;;
+        --episode-start)
+            EPISODE_START="$2"
+            shift 2
+            ;;
         --year)
             YEAR="$2"
             shift 2
@@ -51,13 +56,14 @@ while [[ $# -gt 0 ]]; do
             echo "Usage: $0 --output OUTPUT_DIR [OPTIONS]"
             echo ""
             echo "Options:"
-            echo "  --disc DISC        Disc path (default: disc:0)"
-            echo "  --output DIR       Output directory (required)"
-            echo "  --temp DIR         Temporary directory (default: OUTPUT_DIR/.makemkv)"
-            echo "  --title TITLE      TV series title"
-            echo "  --season NUM       Season number (default: 1)"
-            echo "  --disc-type TYPE   Override disc type (dvd|bd|uhd)"
-            echo "  --help             Show this help message"
+            echo "  --disc DISC              Disc path (default: disc:0)"
+            echo "  --output DIR             Output directory (required)"
+            echo "  --temp DIR               Temporary directory (default: OUTPUT_DIR/.makemkv)"
+            echo "  --title TITLE            TV series title"
+            echo "  --season NUM             Season number (default: 1)"
+            echo "  --episode-start NUM      Starting episode number (default: 1)"
+            echo "  --disc-type TYPE         Override disc type (dvd|bd|uhd)"
+            echo "  --help                   Show this help message"
             exit 0
             ;;
         *)
@@ -97,6 +103,10 @@ fi
 
 if [ -n "$SEASON" ]; then
     CMD_ARGS+=(--season "$SEASON")
+fi
+
+if [ -n "$EPISODE_START" ] && [ "$EPISODE_START" != "1" ]; then
+    CMD_ARGS+=(--episode-start "$EPISODE_START")
 fi
 
 if [ -n "$YEAR" ]; then

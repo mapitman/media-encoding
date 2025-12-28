@@ -725,6 +725,8 @@ class DiscRipper:
         self.disc_type: Optional[str] = None  # 'dvd' or 'bd'
         # Initialize online disc identifier
         self.online_identifier = OnlineDiscIdentifier(self.config)
+        # Only show detailed MakeMKV scan output once; then suppress
+        self._logged_first_makemkv_scan: bool = False
 
     def _default_bps_fallback(self) -> float:
         # Choose fallback BPS based on inferred disc type
@@ -1271,8 +1273,11 @@ class DiscRipper:
             List of paths to ripped files
         """
         ripped_files = []
+        total_titles = len(title_ids)
         
-        for title_id in title_ids:
+        for idx, title_id in enumerate(title_ids, start=1):
+            logger.info(f"🎬 Ripping title {idx} of {total_titles} (Title ID: {title_id})")
+            
             # Check current free space (used for warnings/estimates)
             free_temp = self.get_free_space_bytes(self.temp_dir)
             free_out = self.get_free_space_bytes(self.output_dir)
@@ -1352,7 +1357,7 @@ class DiscRipper:
                     TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
                     expand=True,
                 )
-                task_id = progress.add_task(f"Title {title_id}", total=100)
+                task_id = progress.add_task(f"Title {title_id} ({idx}/{total_titles})", total=100)
                 live = Live(progress, console=console, refresh_per_second=10)
                 live.start()
                 progress_bar = progress
@@ -1411,6 +1416,12 @@ class DiscRipper:
                             write_log(f"📊 Estimated title {title_id} size (approx.): {self.human_bytes(est_title_bytes)}", 'info')
                     except Exception:
                         pass
+                # Track if we've shown the brief scan message for this title
+                per_title_scan_brief_logged = False
+                # For titles after the first, suppress verbose MakeMKV scan chatter
+                suppress_scan_output = (idx > 1)
+                # Track which captions we've already logged to avoid repeating them
+                logged_captions = set()
                 # Helper to print logs using Rich console
                 def write_log(msg: str, level: str = 'info'):
                     try:
@@ -1437,6 +1448,19 @@ class DiscRipper:
                             # continue to fallback update below
                         else:
                             line = line.strip()
+                            
+                            # EARLY SUPPRESSION: For titles 2+, suppress all makemkvcon scan chatter before processing
+                            if idx > 1:
+                                scan_patterns = ('MakeMKV v', 'Scanning CD-ROM', 'LibreDrive mode', 'disc access mode',
+                                                'Processing AV clips', 'Processing movie', 'Decrypting', 'Evaluation version',
+                                                'content hash table', 'BD+ code', 'Processing titles', 'Title #',
+                                                'length of', 'minimum title', 'was therefore skipped', 'added as title')
+                                if any(pat in line for pat in scan_patterns):
+                                    # Show brief message once, then skip all scan details
+                                    if not per_title_scan_brief_logged:
+                                        write_log(f"Scanning disc... ({idx}/{total_titles})", 'info')
+                                        per_title_scan_brief_logged = True
+                                    continue  # Skip to next line without processing this one
 
                             # Progress lines from MakeMKV typically start with PRGV:<value>
                             if line.startswith('PRGV:'):
@@ -1458,9 +1482,9 @@ class DiscRipper:
                                     # Log progress for every 1% increment
                                     if pct_int != last_pct_logged and pct_int % 1 == 0:
                                         if COLORAMA_AVAILABLE:
-                                            write_log(f"{Fore.CYAN}Ripping title {title_id}: {pct_int}%{Style.RESET_ALL}", 'info')
+                                            write_log(f"{Fore.CYAN}Ripping {idx}/{total_titles} (ID {title_id}): {pct_int}%{Style.RESET_ALL}", 'info')
                                         else:
-                                            write_log(f"Ripping title {title_id}: {pct_int}%", 'info')
+                                            write_log(f"Ripping {idx}/{total_titles} (ID {title_id}): {pct_int}%", 'info')
                                         last_pct_logged = pct_int
                                 except Exception:
                                     logger.debug(f"Could not parse progress line: {line}")
@@ -1479,14 +1503,18 @@ class DiscRipper:
                                         'warning'
                                     )
                             elif line.startswith('PRGC:'):
-                                # Progress caption, show as info and update bar description
+                                # Progress caption, show once and update bar description
                                 caption_match = re.search(r'"([^"]+)"', line)
                                 if caption_match:
                                     caption_text = caption_match.group(1)
-                                    write_log(f"{caption_text}", 'info')
+                                    caption_with_pos = f"{caption_text} ({idx}/{total_titles})"
+                                    # Only print the caption the first time we see it
+                                    if caption_text not in logged_captions:
+                                        write_log(caption_with_pos, 'info')
+                                        logged_captions.add(caption_text)
+                                    # Always update the progress bar description
                                     if progress_bar and task_id is not None:
-                                        # Show caption verbatim; saving descriptions are handled separately
-                                        progress.update(task_id, description=caption_text)
+                                        progress.update(task_id, description=caption_with_pos)
                                     if 'Saving to MKV file' in caption_text or 'Saving' in caption_text:
                                         saving_phase = True
                                         save_start_ts = time.time()
@@ -1494,11 +1522,47 @@ class DiscRipper:
                                 # Filter out robot mode protocol lines (PRGT, DRV, TCOUNT, CINFO, SINFO, etc.)
                                 robot_prefixes = ('PRGT:', 'DRV:', 'TCOUNT:', 'CINFO:', 'SINFO:', 'TINFO:', 'STRACK:', 'ATRACK:', 'VTRACK:')
                                 if not line.startswith(robot_prefixes):
-                                    # All other MakeMKV output—route through Rich if available
-                                    if live:
-                                        live.console.print(line)
+                                    # Handle MakeMKV scan chatter: show detailed output only for the first scan
+                                    scanning_keywords = (
+                                        'MakeMKV v',
+                                        'Scanning CD-ROM',
+                                        'LibreDrive mode',
+                                        'disc access mode',
+                                        'Processing AV clips',
+                                        'Processing movie',
+                                        'Decrypting',
+                                        'Evaluation version',
+                                        'content hash table',
+                                        'BD+ code',
+                                        'Processing titles',
+                                        'Title #',
+                                        'length of',
+                                        'minimum title',
+                                        'was therefore skipped',
+                                        'File',
+                                        'added as title',
+                                        'successfully completed'
+                                    )
+                                    if any(keyword in line for keyword in scanning_keywords):
+                                        # Show full scan details only for the first title; suppress for others
+                                        if not suppress_scan_output:
+                                            # Show detailed line
+                                            if live:
+                                                live.console.print(line)
+                                            else:
+                                                logger.info(line)
+                                        else:
+                                            # Subsequent scans: emit a single brief message, then suppress
+                                            if not per_title_scan_brief_logged:
+                                                write_log(f"Scanning disc... ({idx}/{total_titles})", 'info')
+                                                per_title_scan_brief_logged = True
+                                            # Suppress the rest of the scan details - don't print
                                     else:
-                                        logger.debug(line)
+                                        # Non-scan output—route through Rich if available
+                                        if live:
+                                            live.console.print(line)
+                                        else:
+                                            logger.info(line)
 
                     # Fallback progress update based on growing MKV file size
                     if progress_bar:
@@ -1892,24 +1956,38 @@ class DiscRipper:
         if is_tv_series:
             # Try OMDB for TV series
             metadata = self.online_identifier.search_omdb_tv(title, year)
-            if not metadata:
+            if metadata:
+                logger.info(f"✓ OMDB TV lookup found: '{metadata.get('title')}'" + 
+                           (f" ({metadata.get('year')})" if metadata.get('year') else "") +
+                           (f" - {metadata.get('episodes', 0)} episodes" if metadata.get('episodes') else ""))
+            else:
                 # Fallback to TMDB
                 logger.debug("OMDB TV lookup failed, trying TMDB...")
                 metadata = self.online_identifier.search_tmdb_tv(title, year)
+                if metadata:
+                    logger.info(f"✓ TMDB TV lookup found: '{metadata.get('title')}'" + 
+                               (f" ({metadata.get('year')})" if metadata.get('year') else "") +
+                               (f" - {metadata.get('episodes', 0)} episodes" if metadata.get('episodes') else ""))
         else:
             # Try OMDB for movie
             metadata = self.online_identifier.search_omdb_movie(title, year)
-            if not metadata:
+            if metadata:
+                logger.info(f"✓ OMDB movie lookup found: '{metadata.get('title')}'" + 
+                           (f" ({metadata.get('year')})" if metadata.get('year') else ""))
+            else:
                 # Fallback to TMDB
                 logger.debug("OMDB movie lookup failed, trying TMDB...")
                 metadata = self.online_identifier.search_tmdb_movie(title, year)
+                if metadata:
+                    logger.info(f"✓ TMDB movie lookup found: '{metadata.get('title')}'" + 
+                               (f" ({metadata.get('year')})" if metadata.get('year') else ""))
         
         # If online lookup succeeded, return the metadata
         if metadata:
             return metadata
         
         # Fallback to basic metadata if online lookup failed
-        logger.info("Using disc title as fallback")
+        logger.warning(f"⚠️ No metadata found from OMDB or TMDB for '{title}'. Using disc title as fallback.")
         return {
             'title': title,
             'year': year,
@@ -1977,7 +2055,7 @@ class DiscRipper:
 
     def process_disc(self, disc_path: str = "disc:0", is_tv_series: bool = False,
                     title: Optional[str] = None, year: Optional[int] = None,
-                    season_num: int = 1) -> List[Path]:
+                    season_num: int = 1, start_episode_num: int = 1) -> List[Path]:
         """
         Complete workflow: scan, rip, encode, and rename.
         
@@ -1987,6 +2065,7 @@ class DiscRipper:
             title: Optional title for metadata lookup
             year: Optional year for metadata lookup
             season_num: Season number for TV series
+            start_episode_num: Starting episode number for TV series (default: 1)
             
         Returns:
             List of final output file paths
@@ -2014,6 +2093,9 @@ class DiscRipper:
         if not title_ids:
             logger.error("No suitable titles found on disc")
             return []
+        
+        # Report how many titles will be ripped
+        logger.info(f"📋 Found {len(title_ids)} title{'s' if len(title_ids) > 1 else ''} to rip: {title_ids}")
         
         # Estimate required space before ripping (raw MKVs + encoded buffer)
         try:
@@ -2075,7 +2157,7 @@ class DiscRipper:
         for idx, ripped_file in enumerate(ripped_files):
             # Generate output filename
             if is_tv_series:
-                episode_num = idx + 1
+                episode_num = (start_episode_num - 1) + idx + 1
                 output_name = f"temp_s{season_num:02d}e{episode_num:02d}.mkv"
             else:
                 output_name = f"temp_movie.mkv"
@@ -2116,8 +2198,9 @@ class DiscRipper:
             if self.encode_file(ripped_file, output_file):
                 # Rename with metadata
                 if is_tv_series:
+                    episode_num = (start_episode_num - 1) + idx + 1
                     final_file = self.rename_file(output_file, metadata, 
-                                                  episode_num=idx + 1,
+                                                  episode_num=episode_num,
                                                   season_num=season_num)
                 else:
                     final_file = self.rename_file(output_file, metadata)
@@ -2192,6 +2275,13 @@ def main():
     )
     
     parser.add_argument(
+        '--episode-start',
+        type=int,
+        default=1,
+        help='Starting episode number for TV series (default: 1)'
+    )
+    
+    parser.add_argument(
         '--debug',
         action='store_true',
         help='Enable debug logging'
@@ -2235,7 +2325,8 @@ def main():
         is_tv_series=args.tv,
         title=args.title,
         year=args.year,
-        season_num=args.season
+        season_num=args.season,
+        start_episode_num=args.episode_start
     )
     
     if output_files:

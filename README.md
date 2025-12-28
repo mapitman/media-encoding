@@ -380,6 +380,7 @@ flowchart LR
 When you run `make activate`, here's what happens:
 
 ```mermaid
+%%{init: {'theme':'base', 'themeVariables': { 'primaryColor':'#4a90e2','primaryTextColor':'#fff','primaryBorderColor':'#2e5c8a','lineColor':'#4a90e2','secondaryColor':'#82b366','tertiaryColor':'#f4a460','noteBkgColor':'#fff9e6','noteTextColor':'#000','noteBorderColor':'#d4a017','actorBkg':'#e8f4f8','actorBorder':'#4a90e2','actorTextColor':'#000','signalColor':'#4a90e2','signalTextColor':'#2d3748','labelBoxBkgColor':'#4a90e2','labelBoxBorderColor':'#2e5c8a','labelTextColor':'#fff','loopTextColor':'#2d3748','activationBorderColor':'#2e5c8a','activationBkgColor':'#c8e0f4','sequenceNumberColor':'#fff'}}}%%
 sequenceDiagram
     participant User
     participant Terminal
