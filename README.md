@@ -5,28 +5,23 @@ Tools and scripts for ripping, encoding and organizing media files from DVDs, Bl
 ## Quick Start
 
 ```bash
-# 1) Set up the virtual environment
-make install
+# 1) Ensure MakeMKV & FFmpeg are installed (see Requirements)
 
-# 2) Open an activated shell
-make activate
+# 2) Install .NET SDK 10+
+# Linux (via package manager) or from https://dotnet.microsoft.com/download
 
-# Or activate in your current shell (zsh/bash)
-source venv/bin/activate
+# 3) Run the app
+dotnet run --project src/MediaEncoding -- --help
 
-# 3) Try a command
-./rip_disc.py --help
+# Or use the wrapper scripts
+./rip_movie.sh --output ~/Movies --title "Inception" --year 2010
+./rip_tv.sh --output ~/TV --title "Breaking Bad" --season 1 --episode-start 1
 ```
 
-Tip: `make activate` starts a new interactive shell with the venv already activated; type `exit` to return to your original shell.
+### Wrappers
 
-### Make Targets
-
-- **activate:** Start an interactive shell with the venv activated (exit to return).
-- **rip-movie:** Activate venv and run `rip_movie.sh` (use `OUTPUT=/path` and `EXTRA_ARGS`).
-- **rip-tv:** Activate venv and run `rip_tv.sh` (use `OUTPUT=/path` and `EXTRA_ARGS`).
-- **install:** Create venv and install dependencies.
-- **clean:** Remove the virtual environment.
+- **rip-movie.sh:** Calls the .NET app for movie ripping (use `--output` and optional flags).
+- **rip-tv.sh:** Calls the .NET app for TV season discs (use `--output`, `--season`, `--episode-start`, and optional flags).
 
 ### Environment Variables
 
@@ -92,13 +87,12 @@ export OMDB_API_KEY="your_omdb_api_key_here"
    sudo dnf install ffmpeg
    ```
 
-3. **Python 3.7+** - For running the main script
+3. **.NET SDK 10+** - For running the .NET app
    ```bash
-   # Ubuntu/Debian
-   sudo apt-get install python3 python3-pip
-   
-   # macOS (usually pre-installed)
-   brew install python3
+   # Verify install
+   dotnet --version
+   # Run the app
+   dotnet run --project src/MediaEncoding -- --help
    ```
 
 4. **libdiscid** (Optional but recommended) - For disc ID calculation
@@ -111,18 +105,15 @@ export OMDB_API_KEY="your_omdb_api_key_here"
    ```
    Enables MusicBrainz disc ID lookups for better metadata identification.
 
-5. **Python dependencies** - Required libraries for functionality
-   ```bash
-   pip install -r requirements.txt
-   ```
-   
-   **Required packages:**
-   - `pyyaml` - YAML configuration file support
-   - `requests` - Online disc identification
-   - `tmdbsimple` - TMDB metadata lookup
-   
-   **Optional packages:**
-   - `discid` - Disc ID calculation for MusicBrainz lookups
+5. **API Keys** (Optional but recommended) - For online metadata lookup
+   - **TMDB**: Sign up for a free account at [TMDB](https://www.themoviedb.org/signup), get your API key at [TMDB API Settings](https://www.themoviedb.org/settings/api)
+   - **OMDB**: Sign up at [OMDB](https://www.omdbapi.com/apikey.aspx)
+   - **Recommended:** Set them as environment variables:
+      ```bash
+      export TMDB_API_KEY="your_tmdb_api_key"
+      export OMDB_API_KEY="your_omdb_api_key"
+      ```
+   - Alternative: Edit the app configuration file
 
 6. **API Keys** (Optional but recommended) - For online metadata lookup
    - **TMDB**: Sign up for a free account at [TMDB](https://www.themoviedb.org/signup), get your API key at [TMDB API Settings](https://www.themoviedb.org/settings/api)
@@ -148,61 +139,37 @@ export OMDB_API_KEY="your_omdb_api_key_here"
    cd media-encoding
    ```
 
-2. Create and activate virtual environment (recommended):
+2. Build and restore the .NET app:
    ```bash
-   make venv
-   make install
-   # Or manually:
-   python3 -m venv venv
-   source venv/bin/activate
-   pip install -r requirements.txt
+   dotnet restore src/MediaEncoding
+   dotnet build src/MediaEncoding
    ```
 
-3. Make scripts executable:
+3. Make wrapper scripts executable:
    ```bash
-   chmod +x rip_disc.py rip_movie.sh rip_tv.sh
+   chmod +x rip_movie.sh rip_tv.sh
    ```
 
 4. Verify dependencies are installed:
    ```bash
-   source venv/bin/activate
-   ./rip_disc.py --help
+   dotnet run --project src/MediaEncoding -- --help
    ```
 
-### Makefile Targets
+### Notes
 
-For convenience, use Make to manage the virtual environment:
-
-```bash
-make help          # Show all available targets
-make install       # Create venv and install dependencies
-make activate      # Start an interactive shell with venv activated
-make rip-tv        # Rip a TV disc (use OUTPUT=~/Videos)
-make rip-movie     # Rip a movie (use OUTPUT=~/Videos)
-make clean         # Remove virtual environment
-```
-
-#### Activation Behavior
-
-- `make activate` starts a new interactive shell that is already activated. Type `exit` to return to your original shell.
-- To activate in your current shell session without starting a new one: `source venv/bin/activate` (zsh/bash) or `. venv/bin/activate` (POSIX sh).
-- Internally, recipes run under bash for consistency (see [Makefile](Makefile)); this does not affect how you activate the venv in your shell.
+- Wrapper scripts now call the .NET app directly.
+- Make-based Python virtualenv steps are no longer required.
 
 ## Usage
 
-### Usage via Make
-
-For common workflows, you can use Make targets:
+### Usage via Wrappers
 
 ```bash
-# Open an activated virtualenv shell
-make activate
-
 # Rip a movie (override output and pass extra args)
-make rip-movie OUTPUT=~/Movies EXTRA_ARGS='--title "The Matrix" --year 1999'
+./rip_movie.sh --output ~/Movies --title "The Matrix" --year 1999
 
 # Rip a TV season disc
-make rip-tv OUTPUT=~/TV EXTRA_ARGS='--title "Breaking Bad" --season 1'
+./rip_tv.sh --output ~/TV --title "Breaking Bad" --season 1 --episode-start 1
 ```
 
 ### Ripping a Movie
@@ -260,34 +227,36 @@ This will:
 3. Include English audio and subtitles
 4. Save as `~/TV/Breaking Bad - S01E01.mkv`, `~/TV/Breaking Bad - S01E02.mkv`, etc.
 
-### Advanced Usage (Python Script)
+### Advanced Usage (.NET App)
 
-For more control, use the Python script directly:
+For more control, use the .NET app directly:
 
 ```bash
-./rip_disc.py --output /path/to/output [OPTIONS]
+dotnet run --project src/MediaEncoding -- --output /path/to/output [OPTIONS]
 ```
 
 **Options:**
 - `--disc DISC` - Disc path (default: `disc:0`)
 - `--output DIR` - Output directory (required)
-- `--temp DIR` - Temporary directory
-- `--tv` - Treat as TV series disc
-- `--title TITLE` - Title for naming
-- `--year YEAR` - Year for naming
-- `--season NUM` - Season number for TV series
-- `--debug` - Enable debug logging
+-- `--temp DIR` - Temporary directory
+-- `--tv` - Treat as TV series disc
+-- `--title TITLE` - Title for naming
+-- `--year YEAR` - Year for naming
+-- `--season NUM` - Season number for TV series
+-- `--episode-start NUM` - Starting episode number for TV
+-- `--disc-type TYPE` - Override disc type for size estimation (`dvd`, `bd`, `uhd`)
+-- `--debug` - Enable debug logging
 
 **Examples:**
 
 Rip a movie with custom disc path:
 ```bash
-./rip_disc.py --disc /dev/sr0 --title "Inception" --year 2010 --output ~/Movies
+dotnet run --project src/MediaEncoding -- --disc /dev/sr0 --title "Inception" --year 2010 --output ~/Movies
 ```
 
 Rip TV series episodes:
 ```bash
-./rip_disc.py --disc disc:0 --tv --title "Friends" --season 1 --output ~/TV
+dotnet run --project src/MediaEncoding -- --disc disc:0 --tv --title "Friends" --season 1 --episode-start 1 --output ~/TV
 ```
 
 Force DVD fallback for a TV special (more accurate size estimation when `CINFO:0` is missing):
@@ -355,49 +324,42 @@ The ripping system integrates multiple tools and services:
 
 ```mermaid
 flowchart LR
-    User["User<br/>Terminal"] --> Make["make activate/<br/>make rip-movie/<br/>make rip-tv"]
-    Make --> Venv["Virtual Env<br/>Created/Activated"]
-    Venv --> Script["rip_movie.sh<br/>or<br/>rip_tv.sh"]
-    Script --> Disc["rip_disc.py<br/>Main Script"]
-    Disc --> MakeMKV["makemkvcon<br/>Disc Scanning"]
-    Disc --> FFmpeg["ffmpeg<br/>Track Selection"]
-    Disc --> TMDB["TMDB API<br/>Metadata Lookup"]
-    Disc --> OMDB["OMDB API<br/>Additional Metadata"]
-    MakeMKV --> Output["Output MKV<br/>in OUTPUT Dir"]
-    FFmpeg --> Output
-    TMDB --> Output
-    OMDB --> Output
+   User["User<br/>Terminal"] --> Script["rip_movie.sh<br/>or<br/>rip_tv.sh"]
+   Script --> App[".NET app<br/>src/MediaEncoding"]
+   App --> MakeMKV["makemkvcon<br/>Disc Scanning"]
+   App --> FFmpeg["ffmpeg<br/>Track Selection"]
+   App --> TMDB["TMDB API<br/>Metadata Lookup"]
+   App --> OMDB["OMDB API<br/>Additional Metadata"]
+   MakeMKV --> Output["Output MKV<br/>in OUTPUT Dir"]
+   FFmpeg --> Output
+   TMDB --> Output
+   OMDB --> Output
     
-    style User fill:#e3f2fd,color:#000
-    style Make fill:#f3e5f5,color:#000
-    style Venv fill:#e8f5e9,color:#000
-    style Script fill:#fff3e0,color:#000
-    style Output fill:#fce4ec,color:#000
+   style User fill:#e3f2fd,color:#000
+   style Script fill:#fff3e0,color:#000
+   style App fill:#e8f5e9,color:#000
+   style Output fill:#fce4ec,color:#000
 ```
 
-### Activation Sequence
+### Running Flow
 
-When you run `make activate`, here's what happens:
+When you run the wrapper scripts, this is the flow:
 
 ```mermaid
 %%{init: {'theme':'base', 'themeVariables': { 'primaryColor':'#4a90e2','primaryTextColor':'#fff','primaryBorderColor':'#2e5c8a','lineColor':'#4a90e2','secondaryColor':'#82b366','tertiaryColor':'#f4a460','noteBkgColor':'#fff9e6','noteTextColor':'#000','noteBorderColor':'#d4a017','actorBkg':'#e8f4f8','actorBorder':'#4a90e2','actorTextColor':'#000','signalColor':'#4a90e2','signalTextColor':'#2d3748','labelBoxBkgColor':'#4a90e2','labelBoxBorderColor':'#2e5c8a','labelTextColor':'#fff','loopTextColor':'#2d3748','activationBorderColor':'#2e5c8a','activationBkgColor':'#c8e0f4','sequenceNumberColor':'#fff'}}}%%
 sequenceDiagram
-    participant User
-    participant Terminal
-    participant Makefile
-    participant Venv as Virtual Env
-    participant Shell
+   participant User
+   participant Terminal
+   participant Wrapper as Wrapper Script
+   participant App as .NET App
+   participant Tools as MakeMKV/FFmpeg
     
-    User->>Terminal: make activate
-    Terminal->>Makefile: Execute target
-    Makefile->>Venv: Create/Check venv
-    Venv-->>Makefile: OK
-    Makefile->>Shell: Launch activated shell
-    Shell-->>User: Interactive prompt
-    User->>Shell: (commands in venv)
-    Shell->>Shell: (type 'exit' to return)
-    Shell-->>Terminal: Return control
-    Terminal-->>User: Back to original shell
+   User->>Terminal: ./rip_tv.sh (or rip_movie.sh)
+   Terminal->>Wrapper: Execute
+   Wrapper->>App: dotnet run -- ...
+   App->>Tools: makemkvcon / ffmpeg
+   Tools-->>App: Output MKV files
+   App-->>Terminal: List output files
 ```
 
 ## How It Works
@@ -449,39 +411,27 @@ The script uses `makemkvcon` to scan the disc and gather information about all t
 
 ### Configuration File
 
-You can use a YAML configuration file to set default values and avoid passing them as command-line arguments each time:
+The app uses a YAML configuration file at [src/MediaEncoding/appsettings.yaml](src/MediaEncoding/appsettings.yaml). Edit it to set defaults:
 
-1. Copy the example configuration:
-   ```bash
-   cp config.example.yaml config.yaml
-   ```
+```yaml
+disc:
+   default_path: "disc:0"
+   default_temp_dir: "/tmp/makemkv"
 
-2. Edit `config.yaml` with your preferred settings:
-   ```yaml
-   disc:
-     default_path: "disc:0"
-     default_temp_dir: "/tmp/makemkv"
-   
-   output:
-     movies_dir: "~/Movies"
-     tv_dir: "~/TV Shows"
-   
-   encoding:
-     include_english_subtitles: true
-     include_stereo_audio: true
-     include_surround_audio: true
-   
-   metadata:
-     lookup_enabled: true
-     tmdb_api_key: "your_api_key_here"
-   ```
+output:
+   movies_dir: "~/Movies"
+   tv_dir: "~/TV"
 
-3. Use the configuration file with the `--config` option:
-   ```bash
-   ./rip_disc.py --config config.yaml --output ~/Movies --title "Movie Name"
-   ```
+encoding:
+   include_english_subtitles: true
+   include_stereo_audio: true
+   include_surround_audio: true
 
-Configuration values can be overridden by command-line arguments.
+metadata:
+   lookup_enabled: true
+```
+
+Environment variables (e.g., `OMDB_API_KEY`, `TMDB_API_KEY`) override config values.
 
 ### Online Metadata Lookup
 
@@ -556,10 +506,10 @@ The script defaults to `disc:0` which is typically the first optical drive. If y
 ./rip_movie.sh --disc disc:1 --output ~/Movies
 
 # Use specific device (Linux)
-./rip_disc.py --disc /dev/sr0 --output ~/Movies
+dotnet run --project src/MediaEncoding -- --disc /dev/sr0 --output ~/Movies
 
 # Use specific device (macOS)
-./rip_disc.py --disc /dev/disk2 --output ~/Movies
+dotnet run --project src/MediaEncoding -- --disc /dev/disk2 --output ~/Movies
 ```
 
 ### Size Estimation
