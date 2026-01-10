@@ -113,7 +113,7 @@ The method contains complex inline callbacks with 150+ lines of parsing logic.
 **Locations:**
 - ~~[src/MediaEncoding/DiscRipper.cs](src/MediaEncoding/DiscRipper.cs)~~ ✅ - Uses `IProgressNotifier`
 - ~~[src/MediaEncoding/DiscScanner.cs](src/MediaEncoding/DiscScanner.cs)~~ ✅ - Uses `IProgressNotifier`
-- [src/MediaEncoding/EncoderService.cs](src/MediaEncoding/EncoderService.cs) - 5+ `AnsiConsole.MarkupLine` calls
+- ~~[src/MediaEncoding/EncoderService.cs](src/MediaEncoding/EncoderService.cs)~~ ✅ - Uses `IProgressNotifier` (progress bars still use Spectre.Console directly)
 - [src/MediaEncoding/MetadataService.cs](src/MediaEncoding/MetadataService.cs) - 3+ `AnsiConsole.MarkupLine` calls
 
 **Issue:** UI concerns (console output) are tightly coupled with business logic, making classes hard to test and reuse.
@@ -127,12 +127,13 @@ The method contains complex inline callbacks with 150+ lines of parsing logic.
 - Inject the notifier into services instead of directly using `AnsiConsole`
 - This allows for testing, alternative UIs, and silent modes
 
-**Resolution:** ✅ Partially completed in branches `refactor/discripper-srp` and `refactor/discscanner-srp`
+**Resolution:** ✅ Partially completed in branches `refactor/discripper-srp`, `refactor/discscanner-srp`, and `refactor/encoder-service-decomposition`
 - Created `IProgressNotifier` interface with methods: Info, Success, Warning, Error, Muted, Accent, Highlight, Plain
 - Implemented `ConsoleProgressNotifier` with Spectre.Console integration
-- Migrated `DiscRipper` and `DiscScanner` to use `IProgressNotifier`
+- Migrated `DiscRipper`, `DiscScanner`, and `EncoderService` to use `IProgressNotifier`
 - Registered in DI container
-- **Remaining**: EncoderService and MetadataService still use direct AnsiConsole calls
+- **Remaining**: MetadataService still uses direct AnsiConsole calls (low priority)
+- Note: Progress bar visualization still uses Spectre.Console directly during active encoding (acceptable)
 
 ---
 
@@ -161,16 +162,20 @@ The method contains complex inline callbacks with 150+ lines of parsing logic.
   - ~~`HandleProgressMessage()`~~ - Extracted to `ScanOutputHandler`
   - ~~`BuildDiscInfo()`~~ - Extracted as separate method
   
-- **EncoderService.EncodeAsync**: Extract methods:
-  - `BuildFfmpegArguments()`
-  - `SelectStreams()`
-  - `HandleEncodingProgress()`
+- ~~**EncoderService.EncodeAsync**~~: ✅ Extract methods:
+  - ~~`BuildFfmpegArguments()`~~ - Extracted
+  - ~~`SelectStreams()`~~ - Extracted (with SelectedStreams record)
+  - ~~`HandleEncodingProgress()`~~ - Extracted
+  - ~~`DisplayEncodingInfo()`~~ - Extracted
+  - ~~`RunEncodingWithProgress()`~~ - Extracted
 
-**Resolution:** ✅ Partially completed in branch `refactor/discripper-srp`
+**Resolution:** ✅ Completed in branches `refactor/discripper-srp`, `refactor/discscanner-srp`, and `refactor/encoder-service-decomposition`
 - Decomposed `DiscRipper.ProcessDiscAsync()` into: `PrepareDirectories()`, `ScanDiscAndLookupMetadata()`, `IdentifyTitlesToRip()`, `RipTitlesAsync()`, `EncodeAndRenameAsync()`
 - Decomposed `DiscScanner.ScanDiscAsync()` by extracting parsing/UI to `ScanOutputHandler` and data building to `BuildDiscInfo()`
-- Main methods now read as clear orchestration workflows
-- **Remaining:** `EncoderService.EncodeAsync()` still needs decomposition
+- Decomposed `EncoderService.EncodeAsync()` into: `SelectStreams()`, `BuildFfmpegArguments()`, `DisplayEncodingInfo()`, `RunEncodingWithProgress()`, `HandleEncodingProgress()`
+- Created `SelectedStreams` record for stream selection results
+- All main methods now read as clear orchestration workflows
+- Methods reduced from 150-250 lines to 10-30 lines each
 
 ---
 
