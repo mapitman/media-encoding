@@ -14,7 +14,7 @@ public class DiscRipper : IDiscRipper
     private readonly IEncoderService _encoder;
     private readonly IMetadataService _metadata;
     private readonly IProgressNotifier _notifier;
-        private readonly IMakeMkvService _makeMkv;
+    private readonly IMakeMkvService _makeMkv;
 
     public DiscRipper(IDiscScanner scanner, IEncoderService encoder, IMetadataService metadata, IMakeMkvService makeMkv, IProgressNotifier notifier)
     {
@@ -221,5 +221,5 @@ public class DiscRipper : IDiscRipper
         return finalFiles;
     }
 
-    
+
 }

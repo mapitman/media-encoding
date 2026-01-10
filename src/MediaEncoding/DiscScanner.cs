@@ -115,7 +115,7 @@ public class DiscScanner : IDiscScanner
                     }
                 }
             }
-            
+
             // Parse protocol lines for disc info (non-display logic)
             if (line.StartsWith("CINFO:1,"))
             {
@@ -210,7 +210,7 @@ public class DiscScanner : IDiscScanner
         }
     }
 
-    
+
 
     private static int ParseDurationToSeconds(string? s)
     {
