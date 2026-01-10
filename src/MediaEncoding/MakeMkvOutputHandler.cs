@@ -59,6 +59,15 @@ public class MakeMkvOutputHandler
 
     private static void TryAppend(string path, string content)
     {
-        try { File.AppendAllText(path, content); } catch { }
+        try
+        {
+            File.AppendAllText(path, content);
+        }
+        catch (Exception ex)
+        {
+            // Best-effort logging: do not rethrow, but make failures visible.
+            AnsiConsole.MarkupLine(
+                $"[red]Failed to append to log file '{Markup.Escape(path)}': {Markup.Escape(ex.Message)}[/]");
+        }
     }
 }
