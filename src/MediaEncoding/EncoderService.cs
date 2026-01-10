@@ -180,8 +180,10 @@ public class EncoderService : IEncoderService
         var audioStreams = streams.FindAll(s => s.CodecType == "audio" &&
             (s.Language == null || s.Language == "eng" || s.Language == "en"));
         
+        // When English subtitles are requested, filter to English (or unspecified) subtitle tracks
         var subtitleStreams = includeEnglishSubtitles
-            ? streams.FindAll(s => s.CodecType == "subtitle")
+            ? streams.FindAll(s => s.CodecType == "subtitle" &&
+                (s.Language == null || s.Language == "eng" || s.Language == "en"))
             : new List<StreamInfo>();
 
         return new SelectedStreams(video, audioStreams, subtitleStreams);
