@@ -95,7 +95,15 @@ public class ScanOutputHandler
         }
         else if (line.StartsWith("MSG:") && (line.Contains("error") || line.Contains("fail")))
         {
-            _notifier.Error($"❌ {line}");
+            var message = MakeMkvProtocol.ExtractQuoted(line);
+            if (!string.IsNullOrWhiteSpace(message))
+            {
+                _notifier.Error($"❌ {message}");
+            }
+            else
+            {
+                _notifier.Error($"❌ {line}");
+            }
         }
         else if (line.StartsWith("CINFO:1,"))
         {
