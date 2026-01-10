@@ -20,7 +20,7 @@ public class EncoderService : IEncoderService
         var doc = JsonDocument.Parse(json.ToString());
         var streams = new List<StreamInfo>();
         double? durationSeconds = null;
-        
+
         // Extract duration from format section
         if (doc.RootElement.TryGetProperty("format", out var format) &&
             format.TryGetProperty("duration", out var dur) &&
@@ -28,7 +28,7 @@ public class EncoderService : IEncoderService
         {
             durationSeconds = durVal;
         }
-        
+
         foreach (var s in doc.RootElement.GetProperty("streams").EnumerateArray())
         {
             var si = new StreamInfo
@@ -53,7 +53,7 @@ public class EncoderService : IEncoderService
         var streams = analysis.Streams;
         var video = ChooseBestVideo(streams);
         // Filter to only English audio tracks
-        var audioStreams = streams.FindAll(s => s.CodecType == "audio" && 
+        var audioStreams = streams.FindAll(s => s.CodecType == "audio" &&
             (s.Language == null || s.Language == "eng" || s.Language == "en"));
         var subtitleStreams = includeEnglishSubtitles
             ? streams.FindAll(s => s.CodecType == "subtitle")
@@ -113,22 +113,22 @@ public class EncoderService : IEncoderService
 
         // Show encoding progress via ffmpeg stats output
         var ffmpegArgs = args.ToString() + " -progress pipe:2 -loglevel warning";
-        
+
         var inputFileName = System.IO.Path.GetFileName(inputFile);
         var outputFileName = System.IO.Path.GetFileName(outputFile);
         AnsiConsole.MarkupLine($"[{ConsoleColors.Info}]🎬 Encoding: {Markup.Escape(inputFileName)}[/]");
         AnsiConsole.MarkupLine($"[{ConsoleColors.Info}]   → Output: {Markup.Escape(outputFileName)}[/]");
         AnsiConsole.MarkupLine($"[{ConsoleColors.Muted}]   Settings: x264 preset=slow CRF=22[/]");
-        
+
         var durationMs = (analysis.DurationSeconds ?? 0) * 1000.0;
         var exit = 0;
-        
+
         var durationTicks = (long)(durationMs * TimeSpan.TicksPerMillisecond);
-        
+
         await AnsiConsole.Progress()
             .Columns(new ProgressColumn[]
             {
-                new TaskDescriptionColumn(), 
+                new TaskDescriptionColumn(),
                 new ElapsedTimeColumn
                 {
                     Style = CustomColors.Highlight
@@ -142,7 +142,7 @@ public class EncoderService : IEncoderService
                 {
                     Style = CustomColors.Info
                 },
-               
+
                 new RemainingTimeColumn
                 {
                     Style = CustomColors.Accent
@@ -154,12 +154,14 @@ public class EncoderService : IEncoderService
                 var task = ctx.AddTask($"[{ConsoleColors.Success}]Encoding (?x)[/]", maxValue: durationTicks);
                 double currentTimeMs = 0;
                 string currentSpeed = "0";
-                
+
                 exit = await _runner.RunAsync("ffmpeg", ffmpegArgs,
-                    onOutput: line => {
+                    onOutput: line =>
+                    {
                         // ffmpeg stdout - not used with -progress pipe:2
                     },
-                    onError: e => {
+                    onError: e =>
+                    {
                         // Progress lines come in key=value format on stderr
                         // Use out_time_us (microseconds) for accurate progress tracking
                         if (e.StartsWith("out_time_us="))
@@ -193,14 +195,14 @@ public class EncoderService : IEncoderService
                             AnsiConsole.MarkupLine($"[{ConsoleColors.Error}]❌ ffmpeg: {Markup.Escape(e)}[/]");
                         }
                     });
-                
+
                 if (exit == 0 && task.Value < durationTicks)
                 {
                     task.Value = durationTicks;
                 }
                 task.StopTask();
             });
-        
+
         return exit == 0;
     }
 
