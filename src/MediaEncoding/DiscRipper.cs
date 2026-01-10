@@ -98,7 +98,6 @@ public class DiscRipper : IDiscRipper
             var existingFiles = new HashSet<string>(Directory.EnumerateFiles(options.Temp!, "*.mkv"));
             var progressLogPath = Path.Combine(options.Temp!, $"progress_title_{titleId:D2}.log");
             if (File.Exists(progressLogPath)) File.Delete(progressLogPath);
-            var args = $"-r --robot mkv {options.Disc} {titleId} \"{options.Temp}\"";
 
             await AnsiConsole.Progress()
                 .AutoRefresh(true)
