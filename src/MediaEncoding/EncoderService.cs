@@ -245,6 +245,6 @@ public class EncoderService : IEncoderService
         args.Append($"\"{outputFile}\"");
 
         // Add progress and logging options
-        return args.ToString() + " -progress pipe:2 -loglevel warning";
+        return args + " -progress pipe:2 -loglevel warning";
     }
 }
