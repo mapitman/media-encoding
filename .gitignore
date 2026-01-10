@@ -482,3 +482,8 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+
+# Any MakeMKV working directories anywhere
+**/.makemkv/
+# MKV files produced under test_rip (avoid accidental commits)
+*.mkv
