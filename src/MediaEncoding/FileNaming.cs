@@ -18,7 +18,7 @@ public static class FileNaming
         var year = metadata.Year;
         var mediaType = metadata.Type;
         var safeTitle = SanitizeFileName(title);
-        var safeSuffix = string.IsNullOrWhiteSpace(versionSuffix) ? "" : SanitizeFileName(versionSuffix);
+        var safeSuffix = string.IsNullOrWhiteSpace(versionSuffix) ? "" : $" {SanitizeFileName(versionSuffix.Trim())}";
         string filename;
         if (mediaType == "tv" && episodeNum.HasValue)
         {
