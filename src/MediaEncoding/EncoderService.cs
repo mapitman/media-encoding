@@ -10,7 +10,7 @@ public class EncoderService : IEncoderService
 {
     private readonly IProcessRunner _runner;
     private readonly IProgressNotifier _notifier;
-    
+
     public EncoderService(IProcessRunner runner, IProgressNotifier notifier)
     {
         _runner = runner;
@@ -175,11 +175,11 @@ public class EncoderService : IEncoderService
     {
         var streams = analysis.Streams;
         var video = ChooseBestVideo(streams);
-        
+
         // Filter to only English audio tracks
         var audioStreams = streams.FindAll(s => s.CodecType == "audio" &&
             (s.Language == null || s.Language == "eng" || s.Language == "en"));
-        
+
         // When English subtitles are requested, filter to English (or unspecified) subtitle tracks
         var subtitleStreams = includeEnglishSubtitles
             ? streams.FindAll(s => s.CodecType == "subtitle" &&
@@ -192,7 +192,7 @@ public class EncoderService : IEncoderService
     private static string BuildFfmpegArguments(string inputFile, string outputFile, SelectedStreams selected)
     {
         var args = new System.Text.StringBuilder();
-        
+
         // Input probe settings first to satisfy ffmpeg recommendation for PGS subs
         args.Append("-probesize 400M -analyzeduration 400M ");
         args.Append($"-i \"{inputFile}\" ");
