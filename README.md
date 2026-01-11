@@ -1,4 +1,4 @@
-# media-encoding
+# RipSharp
 
 Automatic DVD, Blu-Ray, and UltraHD Blu-Ray ripping tool with intelligent metadata lookup and file organization.
 
@@ -8,17 +8,17 @@ Automatic DVD, Blu-Ray, and UltraHD Blu-Ray ripping tool with intelligent metada
 # 1) Install MakeMKV, FFmpeg, and .NET SDK 10+ (see Requirements)
 
 # 2) View help
-dotnet run --project src/MediaEncoding -- --help
+dotnet run --project src/RipSharp -- --help
 
 # 3) Set API keys (optional but recommended)
 export TMDB_API_KEY="your_key_here"
 export OMDB_API_KEY="your_key_here"
 
 # 4) Rip a movie
-dotnet run --project src/MediaEncoding -- --output ~/Movies --mode movie
+dotnet run --project src/RipSharp -- --output ~/Movies --mode movie
 
 # 5) Rip a TV season
-dotnet run --project src/MediaEncoding -- --output ~/TV --mode tv --title "Breaking Bad" --season 1
+dotnet run --project src/RipSharp -- --output ~/TV --mode tv --title "Breaking Bad" --season 1
 ```
 
 ## Basic Usage
@@ -26,7 +26,7 @@ dotnet run --project src/MediaEncoding -- --output ~/TV --mode tv --title "Break
 ### Movie Ripping
 
 ```bash
-dotnet run --project src/MediaEncoding -- --output ~/Movies --mode movie --title "The Matrix" --year 1999
+dotnet run --project src/RipSharp -- --output ~/Movies --mode movie --title "The Matrix" --year 1999
 ```
 
 This will:
@@ -38,7 +38,7 @@ This will:
 ### TV Series Ripping
 
 ```bash
-dotnet run --project src/MediaEncoding -- --output ~/TV --mode tv --title "Breaking Bad" --season 1
+dotnet run --project src/RipSharp -- --output ~/TV --mode tv --title "Breaking Bad" --season 1
 ```
 
 This will:
@@ -82,7 +82,7 @@ export OMDB_API_KEY="your_omdb_api_key"
 
 ### Config File (Alternative)
 
-Edit [src/MediaEncoding/appsettings.yaml](src/MediaEncoding/appsettings.yaml):
+Edit [src/RipSharp/appsettings.yaml](src/RipSharp/appsettings.yaml):
 
 ```yaml
 metadata:
@@ -133,15 +133,15 @@ metadata:
 ## Installation
 
 ```bash
-git clone https://github.com/mapitman/media-encoding.git
-cd media-encoding
-dotnet restore src/MediaEncoding
-dotnet build src/MediaEncoding
+git clone https://github.com/mapitman/RipSharp.git
+cd RipSharp
+dotnet restore src/RipSharp
+dotnet build src/RipSharp
 ```
 
 Then verify it works:
 ```bash
-dotnet run --project src/MediaEncoding -- --output /tmp/test --mode movie
+dotnet run --project src/RipSharp -- --output /tmp/test --mode movie
 ```
 
 *The app requires `--output` and `--mode` at minimum. See **Command-Line Options** above.*
@@ -204,7 +204,7 @@ Visit: https://www.makemkv.com/forum/viewtopic.php?f=5&t=1053
 
 Some systems require elevated permissions to access optical drives:
 ```bash
-sudo dotnet run --project src/MediaEncoding -- --output ~/Movies --mode movie
+sudo dotnet run --project src/RipSharp -- --output ~/Movies --mode movie
 ```
 
 ## Examples
@@ -246,7 +246,7 @@ Contributions welcome! Please submit issues or pull requests.
 ## Support
 
 - Check [Troubleshooting](#troubleshooting) above
-- Open an issue on [GitHub](https://github.com/mapitman/media-encoding/issues)
+- Open an issue on [GitHub](https://github.com/mapitman/RipSharp/issues)
 - Visit [MakeMKV forums](https://www.makemkv.com/forum/)
 
 ## Acknowledgments

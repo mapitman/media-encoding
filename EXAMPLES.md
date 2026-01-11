@@ -77,13 +77,13 @@ make rip-tv OUTPUT=~/TV EXTRA_ARGS='--title "Breaking Bad" --season 1'
 
 ```bash
 # Basic movie rip
-dotnet run --project src/MediaEncoding -- --mode movie --title "The Matrix" --year 1999 --output ~/Movies
+dotnet run --project src/RipSharp -- --mode movie --title "The Matrix" --year 1999 --output ~/Movies
 
 # Movie with custom disc path
-dotnet run --project src/MediaEncoding -- --mode movie --disc /dev/sr0 --title "Inception" --year 2010 --output ~/Movies
+dotnet run --project src/RipSharp -- --mode movie --disc /dev/sr0 --title "Inception" --year 2010 --output ~/Movies
 
 # Movie with custom temp directory
-dotnet run --project src/MediaEncoding -- --mode movie --title "The Dark Knight" --year 2008 \
+dotnet run --project src/RipSharp -- --mode movie --title "The Dark Knight" --year 2008 \
     --output ~/Movies --temp /mnt/scratch/temp
 ```
 
@@ -91,13 +91,13 @@ dotnet run --project src/MediaEncoding -- --mode movie --title "The Dark Knight"
 
 ```bash
 # Basic TV series rip (Season 1)
-dotnet run --project src/MediaEncoding -- --mode tv --title "Breaking Bad" --season 1 --output ~/TV
+dotnet run --project src/RipSharp -- --mode tv --title "Breaking Bad" --season 1 --output ~/TV
 
 # TV series Season 2
-dotnet run --project src/MediaEncoding -- --mode tv --title "Breaking Bad" --season 2 --output ~/TV
+dotnet run --project src/RipSharp -- --mode tv --title "Breaking Bad" --season 2 --output ~/TV
 
 # TV series with custom disc path
-dotnet run --project src/MediaEncoding -- --mode tv --disc disc:1 --title "Friends" --season 1 --output ~/TV
+dotnet run --project src/RipSharp -- --mode tv --disc disc:1 --title "Friends" --season 1 --output ~/TV
 ```
 
 ## Advanced Examples
@@ -111,7 +111,7 @@ dotnet run --project src/MediaEncoding -- --mode tv --disc disc:1 --title "Frien
 The script automatically handles UltraHD discs:
 
 ```bash
-dotnet run --project src/MediaEncoding -- --mode movie --title "Blade Runner 2049" --year 2017 \
+dotnet run --project src/RipSharp -- --mode movie --title "Blade Runner 2049" --year 2017 \
     --output ~/Movies/4K
 ```
 
@@ -122,7 +122,7 @@ Note: UltraHD rips can be 40-100GB and take 1-3 hours.
 For standard DVDs:
 
 ```bash
-dotnet run --project src/MediaEncoding -- rip --title "The Godfather" --year 1972 \
+dotnet run --project src/RipSharp -- rip --title "The Godfather" --year 1972 \
     --output ~/Movies/DVDs --mode movie
 ```
 
@@ -154,21 +154,21 @@ If you have multiple optical drives:
 
 ```bash
 # Terminal 1: Rip from first drive
-dotnet run --project src/MediaEncoding -- rip --disc disc:0 --title "Movie A" --output ~/Movies --mode movie
+dotnet run --project src/RipSharp -- rip --disc disc:0 --title "Movie A" --output ~/Movies --mode movie
 
 # Terminal 2: Simultaneously rip from second drive
-dotnet run --project src/MediaEncoding -- rip --disc disc:1 --title "Movie B" --output ~/Movies --mode movie
+dotnet run --project src/RipSharp -- rip --disc disc:1 --title "Movie B" --output ~/Movies --mode movie
 ```
 
 Make sure to use different temporary directories:
 
 ```bash
 # Terminal 1
-dotnet run --project src/MediaEncoding -- rip --disc disc:0 --temp /tmp/makemkv0 \
+dotnet run --project src/RipSharp -- rip --disc disc:0 --temp /tmp/makemkv0 \
     --title "Movie A" --output ~/Movies --mode movie
 
 # Terminal 2
-dotnet run --project src/MediaEncoding -- rip --disc disc:1 --temp /tmp/makemkv1 \
+dotnet run --project src/RipSharp -- rip --disc disc:1 --temp /tmp/makemkv1 \
     --title "Movie B" --output ~/Movies --mode movie
 ```
 
@@ -181,10 +181,10 @@ For output to network storage:
 mount /mnt/nas
 
 # Then rip to it
-dotnet run --project src/MediaEncoding -- rip --title "Movie" --year 2024 --output /mnt/nas/Movies --mode movie
+dotnet run --project src/RipSharp -- rip --title "Movie" --year 2024 --output /mnt/nas/Movies --mode movie
 
 # Use local temp directory for better performance
-dotnet run --project src/MediaEncoding -- rip --title "Movie" --year 2024 \
+dotnet run --project src/RipSharp -- rip --title "Movie" --year 2024 \
     --output /mnt/nas/Movies --temp /tmp/makemkv --mode movie
 ```
 
@@ -232,11 +232,11 @@ Output directly to Plex directories:
 
 ```bash
 # Movies
-dotnet run --project src/MediaEncoding -- rip --title "Movie Name" --year 2024 \
+dotnet run --project src/RipSharp -- rip --title "Movie Name" --year 2024 \
     --output "/var/lib/plexmediaserver/Library/Movies" --mode movie
 
 # TV Shows
-dotnet run --project src/MediaEncoding -- rip --title "Show Name" --season 1 \
+dotnet run --project src/RipSharp -- rip --title "Show Name" --season 1 \
     --output "/var/lib/plexmediaserver/Library/TV Shows" --mode tv
 ```
 
@@ -245,7 +245,7 @@ dotnet run --project src/MediaEncoding -- rip --title "Show Name" --season 1 \
 Similar structure for Jellyfin:
 
 ```bash
-dotnet run --project src/MediaEncoding -- rip --title "Movie Name" --year 2024 \
+dotnet run --project src/RipSharp -- rip --title "Movie Name" --year 2024 \
     --output "/var/lib/jellyfin/movies" --mode movie
 
 ./rip_tv.sh --title "Show Name" --season 1 \
