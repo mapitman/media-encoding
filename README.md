@@ -120,6 +120,7 @@ metadata:
    - https://www.makemkv.com/
 
 2. **FFmpeg** - Media processing
+
    ```bash
    # Ubuntu/Debian
    sudo apt-get install ffmpeg
@@ -132,6 +133,7 @@ metadata:
    ```
 
 3. **.NET SDK 10.0+** - Runtime
+
    ```bash
    # Check version
    dotnet --version
@@ -160,6 +162,7 @@ dotnet build src/RipSharp
 ```
 
 Then verify it works (auto-detect by default):
+
 ```bash
 dotnet run --project src/RipSharp -- --output /tmp/test
 ```
@@ -215,6 +218,7 @@ RipSharp uses multiple metadata APIs to look up accurate titles, years, and epis
 **Cost:** Free for personal, non-commercial use
 
 **Set in environment:**
+
 ```bash
 export TMDB_API_KEY="your_api_key_here"
 ```
@@ -234,6 +238,7 @@ export TMDB_API_KEY="your_api_key_here"
 **Cost:** Free tier available (1,000 daily requests); paid tiers for higher volume
 
 **Set in environment:**
+
 ```bash
 export OMDB_API_KEY="your_api_key_here"
 ```
@@ -253,6 +258,7 @@ export OMDB_API_KEY="your_api_key_here"
 **Cost:** Free for personal use
 
 **Set in environment:**
+
 ```bash
 export TVDB_API_KEY="your_api_key_here"
 ```
@@ -269,6 +275,7 @@ export TVDB_API_KEY="your_api_key_here"
 ### "Missing required tools" error
 
 Ensure all dependencies are installed and in PATH:
+
 ```bash
 which makemkvcon ffmpeg ffprobe
 ```
@@ -294,6 +301,7 @@ Visit: https://www.makemkv.com/forum/viewtopic.php?f=5&t=1053
 ### Permission denied
 
 Some systems require elevated permissions to access optical drives:
+
 ```bash
 sudo dotnet run --project src/RipSharp -- --output ~/Movies --mode movie
 ```
@@ -303,11 +311,11 @@ sudo dotnet run --project src/RipSharp -- --output ~/Movies --mode movie
 See [EXAMPLES.md](EXAMPLES.md) for additional examples including:
 
 ```yaml
-   metadata:
-     lookup_enabled: true
-   omdb_api_key: "your_omdb_api_key"
-   tmdb_api_key: "your_tmdb_api_key"
-   tvdb_api_key: "your_tvdb_api_key"  # optional, issue #37 (in progress)
+metadata:
+  lookup_enabled: true
+omdb_api_key: "your_omdb_api_key"
+tmdb_api_key: "your_tmdb_api_key"
+tvdb_api_key: "your_tvdb_api_key"  # optional, issue #37 (in progress)
 ```
 
 ## Output Formats
