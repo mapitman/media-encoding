@@ -2,13 +2,18 @@ using System;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Spectre.Console;
 
 namespace MediaEncoding;
 
 public class MetadataService : IMetadataService
 {
     private readonly HttpClient _http = new();
+    private readonly IProgressNotifier _notifier;
+
+    public MetadataService(IProgressNotifier notifier)
+    {
+        _notifier = notifier;
+    }
 
     public async Task<Metadata?> LookupAsync(string title, bool isTv, int? year)
     {
@@ -31,7 +36,7 @@ public class MetadataService : IMetadataService
                         Year = doc.RootElement.TryGetProperty("Year", out var yEl) && int.TryParse(yEl.GetString(), out var y) ? y : year,
                         Type = isTv ? "tv" : "movie",
                     };
-                    AnsiConsole.MarkupLine($"[{ConsoleColors.Success}]✓ OMDB {(isTv ? "TV" : "movie")} lookup found: '{Markup.Escape(result.Title)}'" + (result.Year.HasValue ? $" ({result.Year.Value})" : "") + "[/]");
+                    _notifier.Success($"✓ OMDB {(isTv ? "TV" : "movie")} lookup found: '{result.Title}'" + (result.Year.HasValue ? $" ({result.Year.Value})" : ""));
                     return result;
                 }
             }
@@ -54,7 +59,7 @@ public class MetadataService : IMetadataService
                         var name = first.TryGetProperty("name", out var nm) ? nm.GetString() : title;
                         var airYear = first.TryGetProperty("first_air_date", out var fad) && fad.GetString() is string fadStr && fadStr.Length >= 4 ? int.Parse(fadStr.Substring(0, 4)) : year;
                         var md = new Metadata { Title = name ?? title, Year = airYear, Type = "tv" };
-                        AnsiConsole.MarkupLine($"[{ConsoleColors.Success}]✓ TMDB TV lookup found: '{Markup.Escape(md.Title)}'" + (md.Year.HasValue ? $" ({md.Year.Value})" : "") + "[/]");
+                        _notifier.Success($"✓ TMDB TV lookup found: '{md.Title}'" + (md.Year.HasValue ? $" ({md.Year.Value})" : ""));
                         return md;
                     }
                 }
@@ -70,7 +75,7 @@ public class MetadataService : IMetadataService
                         var name = first.TryGetProperty("title", out var nm) ? nm.GetString() : title;
                         var relYear = first.TryGetProperty("release_date", out var rd) && rd.GetString() is string rdStr && rdStr.Length >= 4 ? int.Parse(rdStr.Substring(0, 4)) : year;
                         var md = new Metadata { Title = name ?? title, Year = relYear, Type = "movie" };
-                        AnsiConsole.MarkupLine($"[{ConsoleColors.Success}]✓ TMDB movie lookup found: '{Markup.Escape(md.Title)}'" + (md.Year.HasValue ? $" ({md.Year.Value})" : "") + "[/]");
+                        _notifier.Success($"✓ TMDB movie lookup found: '{md.Title}'" + (md.Year.HasValue ? $" ({md.Year.Value})" : ""));
                         return md;
                     }
                 }
@@ -78,7 +83,7 @@ public class MetadataService : IMetadataService
             catch { }
         }
 
-        AnsiConsole.MarkupLine($"[{ConsoleColors.Warning}]⚠️ No metadata found from OMDB or TMDB for '{Markup.Escape(title)}'. Using disc title as fallback.[/]");
+        _notifier.Warning($"⚠️ No metadata found from OMDB or TMDB for '{title}'. Using disc title as fallback.");
         return new Metadata { Title = title, Year = year, Type = isTv ? "tv" : "movie" };
     }
 }
