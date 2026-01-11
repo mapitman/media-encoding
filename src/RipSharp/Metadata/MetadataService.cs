@@ -15,7 +15,7 @@ public class MetadataService : IMetadataService
         _providers = providers.ToList();
     }
 
-    public async Task<MetadataInfo?> LookupAsync(string title, bool isTv, int? year)
+    public async Task<ContentMetadata?> LookupAsync(string title, bool isTv, int? year)
     {
         var titleVariations = TitleVariationGenerator.Generate(title);
 
@@ -36,6 +36,6 @@ public class MetadataService : IMetadataService
         }
 
         _notifier.Warning($"⚠️ No metadata found from available providers for '{title}'. Using disc title as fallback.");
-        return new MetadataInfo { Title = title, Year = year, Type = isTv ? "tv" : "movie" };
+        return new ContentMetadata { Title = title, Year = year, Type = isTv ? "tv" : "movie" };
     }
 }

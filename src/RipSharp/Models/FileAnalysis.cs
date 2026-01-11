@@ -1,7 +1,0 @@
-namespace RipSharp.Models;
-
-public class FileAnalysis
-{
-    public required List<StreamInfo> Streams { get; init; }
-    public double? DurationSeconds { get; init; }
-}

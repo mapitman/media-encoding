@@ -46,7 +46,7 @@ public class DiscRipper : IDiscRipper
 
         if (metadata is null)
         {
-            _notifier.Error("MetadataInfo? lookup failed; unable to encode and rename titles.");
+            _notifier.Error("ContentMetadata? lookup failed; unable to encode and rename titles.");
             return new List<string>();
         }
 
@@ -62,7 +62,7 @@ public class DiscRipper : IDiscRipper
         Directory.CreateDirectory(options.Temp!);
     }
 
-    private async Task<(DiscInfo discInfo, MetadataInfo? metadata)> ScanDiscAndLookupMetadata(RipOptions options)
+    private async Task<(DiscInfo discInfo, ContentMetadata? metadata)> ScanDiscAndLookupMetadata(RipOptions options)
     {
         var discInfo = await _scanner.ScanDiscAsync(options.Disc);
         if (discInfo == null)
@@ -227,7 +227,7 @@ public class DiscRipper : IDiscRipper
         return rippedFilesMap;
     }
 
-    private async Task<List<string>> EncodeAndRenameAsync(DiscInfo discInfo, List<int> titleIds, Dictionary<int, string> rippedFilesMap, MetadataInfo? metadata, RipOptions options)
+    private async Task<List<string>> EncodeAndRenameAsync(DiscInfo discInfo, List<int> titleIds, Dictionary<int, string> rippedFilesMap, ContentMetadata? metadata, RipOptions options)
     {
         var finalFiles = new List<string>();
         foreach (var titleId in titleIds)

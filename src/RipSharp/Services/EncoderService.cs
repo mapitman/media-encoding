@@ -18,14 +18,14 @@ public class EncoderService : IEncoderService
         _notifier = notifier;
     }
 
-    public async Task<FileAnalysis?> AnalyzeAsync(string filePath)
+    public async Task<MediaFileAnalysis?> AnalyzeAsync(string filePath)
     {
         var json = new System.Text.StringBuilder();
         var exit = await _runner.RunAsync("ffprobe", $"-v quiet -print_format json -show_streams -show_format \"{filePath}\"",
             onOutput: line => json.AppendLine(line));
         if (exit != 0) return null;
         var doc = JsonDocument.Parse(json.ToString());
-        var streams = new List<StreamInfo>();
+        var streams = new List<MediaStream>();
         double? durationSeconds = null;
 
         // Extract duration from format section
@@ -38,7 +38,7 @@ public class EncoderService : IEncoderService
 
         foreach (var s in doc.RootElement.GetProperty("streams").EnumerateArray())
         {
-            var si = new StreamInfo
+            var si = new MediaStream
             {
                 Index = s.TryGetProperty("index", out var idx) ? idx.GetInt32() : 0,
                 CodecType = s.TryGetProperty("codec_type", out var ct) ? ct.GetString() ?? string.Empty : string.Empty,
@@ -50,7 +50,7 @@ public class EncoderService : IEncoderService
             };
             streams.Add(si);
         }
-        return new FileAnalysis { Streams = streams, DurationSeconds = durationSeconds };
+        return new MediaFileAnalysis { Streams = streams, DurationSeconds = durationSeconds };
     }
 
     public async Task<bool> EncodeAsync(string inputFile, string outputFile, bool includeEnglishSubtitles, int ordinal, int total)
@@ -150,9 +150,9 @@ public class EncoderService : IEncoderService
         }
     }
 
-    private static StreamInfo? ChooseBestVideo(List<StreamInfo> streams)
+    private static MediaStream? ChooseBestVideo(List<MediaStream> streams)
     {
-        StreamInfo? best = null;
+        MediaStream? best = null;
         foreach (var v in streams)
         {
             if (v.CodecType != "video") continue;
@@ -168,11 +168,11 @@ public class EncoderService : IEncoderService
     }
 
     private record SelectedStreams(
-        StreamInfo? Video,
-        List<StreamInfo> Audio,
-        List<StreamInfo> Subtitles);
+        MediaStream? Video,
+        List<MediaStream> Audio,
+        List<MediaStream> Subtitles);
 
-    private static SelectedStreams SelectStreams(FileAnalysis analysis, bool includeEnglishSubtitles)
+    private static SelectedStreams SelectStreams(MediaFileAnalysis analysis, bool includeEnglishSubtitles)
     {
         var streams = analysis.Streams;
         var video = ChooseBestVideo(streams);
@@ -185,7 +185,7 @@ public class EncoderService : IEncoderService
         var subtitleStreams = includeEnglishSubtitles
             ? streams.FindAll(s => s.CodecType == "subtitle" &&
                 (s.Language == null || s.Language == "eng" || s.Language == "en"))
-            : new List<StreamInfo>();
+            : new List<MediaStream>();
 
         return new SelectedStreams(video, audioStreams, subtitleStreams);
     }

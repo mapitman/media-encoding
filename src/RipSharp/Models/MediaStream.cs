@@ -1,6 +1,6 @@
 namespace RipSharp.Models;
 
-public class StreamInfo
+public class MediaStream
 {
     public string CodecType { get; set; } = string.Empty; // video|audio|subtitle
     public int Index { get; set; }

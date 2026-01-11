@@ -39,7 +39,7 @@ public class FileNamingTests
         // Arrange
         var tempFile = Path.GetTempFileName();
         File.WriteAllText(tempFile, "test");
-        var metadata = new MetadataInfo { Title = "The Simpsons Movie", Year = 2007, Type = "movie" };
+        var metadata = new ContentMetadata { Title = "The Simpsons Movie", Year = 2007, Type = "movie" };
         var versionSuffix = " - title00";
         string? result = null;
 
@@ -65,7 +65,7 @@ public class FileNamingTests
         // Arrange
         var tempFile = Path.GetTempFileName();
         File.WriteAllText(tempFile, "test");
-        var metadata = new MetadataInfo { Title = "Example Show", Year = 2020, Type = "tv" };
+        var metadata = new ContentMetadata { Title = "Example Show", Year = 2020, Type = "tv" };
         string? result = null;
 
         try

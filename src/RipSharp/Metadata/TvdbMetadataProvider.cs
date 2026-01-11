@@ -31,7 +31,7 @@ public class TvdbMetadataProvider : IMetadataProvider, ITvEpisodeTitleProvider
         _notifier = notifier;
     }
 
-    public async Task<MetadataInfo?> LookupAsync(string title, bool isTv, int? year)
+    public async Task<ContentMetadata?> LookupAsync(string title, bool isTv, int? year)
     {
         // TVDB focus is TV content; for movies keep existing providers as primary.
         if (!isTv)
@@ -41,7 +41,7 @@ public class TvdbMetadataProvider : IMetadataProvider, ITvEpisodeTitleProvider
         if (series.seriesId == null)
             return null;
 
-        return new MetadataInfo
+        return new ContentMetadata
         {
             Title = series.seriesName ?? title,
             Year = series.year ?? year,

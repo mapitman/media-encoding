@@ -20,7 +20,7 @@ public class OmdbMetadataProvider : IMetadataProvider
         _notifier = notifier;
     }
 
-    public async Task<MetadataInfo?> LookupAsync(string title, bool isTv, int? year)
+    public async Task<ContentMetadata?> LookupAsync(string title, bool isTv, int? year)
     {
         try
         {
@@ -29,7 +29,7 @@ public class OmdbMetadataProvider : IMetadataProvider
             var doc = JsonDocument.Parse(json);
             if (doc.RootElement.TryGetProperty("Response", out var resp) && resp.GetString() == "True")
             {
-                var result = new MetadataInfo
+                var result = new ContentMetadata
                 {
                     Title = doc.RootElement.TryGetProperty("Title", out var t) ? t.GetString() ?? title : title,
                     Year = doc.RootElement.TryGetProperty("Year", out var yEl) && int.TryParse(yEl.GetString(), out var y) ? y : year,

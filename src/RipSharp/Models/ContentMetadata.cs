@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace RipSharp.Models;
 
-public class MetadataInfo
+public class ContentMetadata
 {
     public string Title { get; set; } = "Unknown";
     public int? Year { get; set; }

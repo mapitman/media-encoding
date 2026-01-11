@@ -20,7 +20,7 @@ public class TmdbMetadataProvider : IMetadataProvider
         _notifier = notifier;
     }
 
-    public async Task<MetadataInfo?> LookupAsync(string title, bool isTv, int? year)
+    public async Task<ContentMetadata?> LookupAsync(string title, bool isTv, int? year)
     {
         try
         {
@@ -30,7 +30,7 @@ public class TmdbMetadataProvider : IMetadataProvider
         return null;
     }
 
-    private async Task<MetadataInfo?> LookupTvAsync(string title, int? year)
+    private async Task<ContentMetadata?> LookupTvAsync(string title, int? year)
     {
         var url = $"https://api.themoviedb.org/3/search/tv?api_key={_apiKey}&query={Uri.EscapeDataString(title)}" + (year.HasValue ? $"&first_air_date_year={year.Value}" : "");
         var json = await _http.GetStringAsync(url);
@@ -41,13 +41,13 @@ public class TmdbMetadataProvider : IMetadataProvider
             var first = results[0];
             var name = first.TryGetProperty("name", out var nm) ? nm.GetString() : title;
             var airYear = first.TryGetProperty("first_air_date", out var fad) && fad.GetString() is string fadStr && fadStr.Length >= 4 ? int.Parse(fadStr.Substring(0, 4)) : year;
-            var md = new MetadataInfo { Title = name ?? title, Year = airYear, Type = "tv" };
+            var md = new ContentMetadata { Title = name ?? title, Year = airYear, Type = "tv" };
             return md;
         }
         return null;
     }
 
-    private async Task<MetadataInfo?> LookupMovieAsync(string title, int? year)
+    private async Task<ContentMetadata?> LookupMovieAsync(string title, int? year)
     {
         var url = $"https://api.themoviedb.org/3/search/movie?api_key={_apiKey}&query={Uri.EscapeDataString(title)}" + (year.HasValue ? $"&year={year.Value}" : "");
         var json = await _http.GetStringAsync(url);
@@ -58,7 +58,7 @@ public class TmdbMetadataProvider : IMetadataProvider
             var first = results[0];
             var name = first.TryGetProperty("title", out var nm) ? nm.GetString() : title;
             var relYear = first.TryGetProperty("release_date", out var rd) && rd.GetString() is string rdStr && rdStr.Length >= 4 ? int.Parse(rdStr.Substring(0, 4)) : year;
-            var md = new MetadataInfo { Title = name ?? title, Year = relYear, Type = "movie" };
+            var md = new ContentMetadata { Title = name ?? title, Year = relYear, Type = "movie" };
             return md;
         }
         return null;
