@@ -4,7 +4,7 @@ using RipSharp;
 
 using Xunit;
 
-namespace RipSharp.Tests;
+namespace RipSharp.Tests.Services;
 
 public class DiscTypeDetectorTests
 {

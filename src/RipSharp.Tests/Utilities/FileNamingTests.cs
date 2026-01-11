@@ -6,7 +6,7 @@ using RipSharp;
 
 using Xunit;
 
-namespace RipSharp.Tests;
+namespace RipSharp.Tests.Utilities;
 
 public class FileNamingTests
 {

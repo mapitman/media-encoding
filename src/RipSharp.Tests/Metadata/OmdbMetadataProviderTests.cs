@@ -12,7 +12,7 @@ using RipSharp;
 
 using Xunit;
 
-namespace RipSharp.Tests;
+namespace RipSharp.Tests.Metadata;
 
 public class OmdbMetadataProviderTests
 {

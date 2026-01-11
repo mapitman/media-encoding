@@ -7,7 +7,7 @@ using RipSharp;
 
 using Xunit;
 
-namespace RipSharp.Tests;
+namespace RipSharp.Tests.Core;
 
 public class RipOptionsTests
 {
