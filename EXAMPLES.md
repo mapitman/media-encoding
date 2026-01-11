@@ -77,13 +77,13 @@ make rip-tv OUTPUT=~/TV EXTRA_ARGS='--title "Breaking Bad" --season 1'
 
 ```bash
 # Basic movie rip
-./rip_movie.sh --title "The Matrix" --year 1999 --output ~/Movies
+dotnet run --project src/MediaEncoding -- --mode movie --title "The Matrix" --year 1999 --output ~/Movies
 
 # Movie with custom disc path
-./rip_movie.sh --disc /dev/sr0 --title "Inception" --year 2010 --output ~/Movies
+dotnet run --project src/MediaEncoding -- --mode movie --disc /dev/sr0 --title "Inception" --year 2010 --output ~/Movies
 
 # Movie with custom temp directory
-./rip_movie.sh --title "The Dark Knight" --year 2008 \
+dotnet run --project src/MediaEncoding -- --mode movie --title "The Dark Knight" --year 2008 \
     --output ~/Movies --temp /mnt/scratch/temp
 ```
 
@@ -91,107 +91,18 @@ make rip-tv OUTPUT=~/TV EXTRA_ARGS='--title "Breaking Bad" --season 1'
 
 ```bash
 # Basic TV series rip (Season 1)
-./rip_tv.sh --title "Breaking Bad" --season 1 --output ~/TV
+dotnet run --project src/MediaEncoding -- --mode tv --title "Breaking Bad" --season 1 --output ~/TV
 
 # TV series Season 2
-./rip_tv.sh --title "Breaking Bad" --season 2 --output ~/TV
+dotnet run --project src/MediaEncoding -- --mode tv --title "Breaking Bad" --season 2 --output ~/TV
 
 # TV series with custom disc path
-./rip_tv.sh --disc disc:1 --title "Friends" --season 1 --output ~/TV
+dotnet run --project src/MediaEncoding -- --mode tv --disc disc:1 --title "Friends" --season 1 --output ~/TV
 ```
 
 ## Advanced Examples
 
-### Online Metadata Lookup
 
-Using TMDB for automatic metadata retrieval:
-
-```bash
-# Set API key via environment variable first (recommended)
-export TMDB_API_KEY="your_api_key_here"
-
-# Movie with online lookup (approximation of title is fine)
-./rip_disc.py --config config.yaml --output ~/Movies --title "dark knight"
-# TMDB will find: The Dark Knight (2008).mkv
-
-# TV series with online lookup
-./rip_disc.py --config config.yaml --output ~/TV --tv --title "game of thrones" --season 1
-# TMDB will find: Game of Thrones - S01E01.mkv, etc.
-
-# If year is ambiguous, provide it for better matching
-./rip_disc.py --config config.yaml --output ~/Movies --title "dune" --year 2021
-# Ensures you get Dune (2021) not Dune (1984)
-
-# Works without config file if environment variable is set
-export TMDB_API_KEY="your_api_key_here"
-./rip_disc.py --output ~/Movies --title "inception"
-# Output: Inception (2010).mkv
-```
-
-**Benefits of online metadata lookup:**
-- Correct capitalization and formatting
-- Accurate release years
-- Proper series names
-- Genre information (stored in metadata)
-- Plot summaries and ratings
-
-**Security Note:** Using environment variables for API keys is more secure than storing them in config files, as environment variables won't be accidentally committed to version control.
-
-### Using the Python Script Directly
-
-```bash
-# Movie with debug logging
-./rip_disc.py --output ~/Movies \
-    --title "Blade Runner" --year 1982 --debug
-
-# TV series with all options
-./rip_disc.py --disc /dev/sr0 \
-    --output ~/TV --temp /tmp/rip \
-    --tv --title "The Wire" --season 1 --debug
-
-# Movie from second optical drive
-./rip_disc.py --disc disc:1 \
-    --title "Avatar" --year 2009 \
-    --output /mnt/media/Movies
-```
-
-## Batch Processing Examples
-
-### Multiple Movies
-
-Edit `batch_rip_movies.sh` and add your movie list:
-
-```bash
-MOVIES=(
-    "The Matrix:1999"
-    "The Matrix Reloaded:2003"
-    "The Matrix Revolutions:2003"
-)
-```
-
-Then run:
-
-```bash
-./batch_rip_movies.sh
-```
-
-The script will prompt you to insert each disc in sequence.
-
-### TV Series Complete Season
-
-Edit `batch_rip_tv_season.sh`:
-
-```bash
-SERIES_TITLE="Breaking Bad"
-SEASON_NUMBER=1
-NUM_DISCS=3  # Number of discs in season 1
-```
-
-Then run:
-
-```bash
-./batch_rip_tv_season.sh
-```
 
 ## Specific Scenarios
 
@@ -200,7 +111,7 @@ Then run:
 The script automatically handles UltraHD discs:
 
 ```bash
-./rip_movie.sh --title "Blade Runner 2049" --year 2017 \
+dotnet run --project src/MediaEncoding -- --mode movie --title "Blade Runner 2049" --year 2017 \
     --output ~/Movies/4K
 ```
 
@@ -211,32 +122,30 @@ Note: UltraHD rips can be 40-100GB and take 1-3 hours.
 For standard DVDs:
 
 ```bash
-./rip_movie.sh --title "The Godfather" --year 1972 \
-    --output ~/Movies/DVDs
+dotnet run --project src/MediaEncoding -- rip --title "The Godfather" --year 1972 \
+    --output ~/Movies/DVDs --mode movie
 ```
 
 DVDs are typically 4-8GB and take 10-30 minutes.
 
 ### Multiple Audio/Subtitle Languages
 
-The script defaults to English tracks. To customize, edit `rip_disc.py` and modify the `encode_file()` method.
+The application defaults to English tracks. To customize language preferences, rebuild the application with modified language codes in `IEncoderService` implementation.
 
-For example, to include Spanish audio:
+For example, to include Spanish audio, modify the language filter in the encoder service:
 
-```python
-# Around line 470, change:
-if language in ('eng', 'en', '') or not language:
-# To:
-if language in ('eng', 'en', 'spa', 'es', '') or not language:
+```csharp
+// In EncoderService.cs, modify language selection logic
+// to include Spanish ('spa', 'es')
 ```
 
 ### Anime / Foreign Films
 
-For non-English content, you may want to modify the subtitle selection:
+For non-English content, you can customize subtitle selection in the source code or manually process files with ffmpeg after the initial rip:
 
 ```bash
-# Edit rip_disc.py to include all subtitle tracks
-# or manually specify tracks using ffmpeg after initial rip
+# Manually specify tracks using ffmpeg after initial rip
+ffmpeg -i input.mkv -c copy -m language:fra output.mkv  # Keep French tracks
 ```
 
 ## Working with Multiple Drives
@@ -245,22 +154,22 @@ If you have multiple optical drives:
 
 ```bash
 # Terminal 1: Rip from first drive
-./rip_movie.sh --disc disc:0 --title "Movie A" --output ~/Movies
+dotnet run --project src/MediaEncoding -- rip --disc disc:0 --title "Movie A" --output ~/Movies --mode movie
 
 # Terminal 2: Simultaneously rip from second drive
-./rip_movie.sh --disc disc:1 --title "Movie B" --output ~/Movies
+dotnet run --project src/MediaEncoding -- rip --disc disc:1 --title "Movie B" --output ~/Movies --mode movie
 ```
 
 Make sure to use different temporary directories:
 
 ```bash
 # Terminal 1
-./rip_movie.sh --disc disc:0 --temp /tmp/makemkv0 \
-    --title "Movie A" --output ~/Movies
+dotnet run --project src/MediaEncoding -- rip --disc disc:0 --temp /tmp/makemkv0 \
+    --title "Movie A" --output ~/Movies --mode movie
 
 # Terminal 2
-./rip_movie.sh --disc disc:1 --temp /tmp/makemkv1 \
-    --title "Movie B" --output ~/Movies
+dotnet run --project src/MediaEncoding -- rip --disc disc:1 --temp /tmp/makemkv1 \
+    --title "Movie B" --output ~/Movies --mode movie
 ```
 
 ## Network/NAS Storage
@@ -272,11 +181,11 @@ For output to network storage:
 mount /mnt/nas
 
 # Then rip to it
-./rip_movie.sh --title "Movie" --year 2024 --output /mnt/nas/Movies
+dotnet run --project src/MediaEncoding -- rip --title "Movie" --year 2024 --output /mnt/nas/Movies --mode movie
 
 # Use local temp directory for better performance
-./rip_movie.sh --title "Movie" --year 2024 \
-    --output /mnt/nas/Movies --temp /tmp/makemkv
+dotnet run --project src/MediaEncoding -- rip --title "Movie" --year 2024 \
+    --output /mnt/nas/Movies --temp /tmp/makemkv --mode movie
 ```
 
 ## Troubleshooting Examples
@@ -323,12 +232,12 @@ Output directly to Plex directories:
 
 ```bash
 # Movies
-./rip_movie.sh --title "Movie Name" --year 2024 \
-    --output "/var/lib/plexmediaserver/Library/Movies"
+dotnet run --project src/MediaEncoding -- rip --title "Movie Name" --year 2024 \
+    --output "/var/lib/plexmediaserver/Library/Movies" --mode movie
 
 # TV Shows
-./rip_tv.sh --title "Show Name" --season 1 \
-    --output "/var/lib/plexmediaserver/Library/TV Shows"
+dotnet run --project src/MediaEncoding -- rip --title "Show Name" --season 1 \
+    --output "/var/lib/plexmediaserver/Library/TV Shows" --mode tv
 ```
 
 ### Jellyfin
@@ -336,8 +245,8 @@ Output directly to Plex directories:
 Similar structure for Jellyfin:
 
 ```bash
-./rip_movie.sh --title "Movie Name" --year 2024 \
-    --output "/var/lib/jellyfin/movies"
+dotnet run --project src/MediaEncoding -- rip --title "Movie Name" --year 2024 \
+    --output "/var/lib/jellyfin/movies" --mode movie
 
 ./rip_tv.sh --title "Show Name" --season 1 \
     --output "/var/lib/jellyfin/shows"
@@ -356,11 +265,11 @@ Not recommended for interactive disc insertion, but possible for ISO files:
 
 ### Post-Processing Hook
 
-Add to the end of `rip_disc.py` to trigger post-processing:
+After successful rip, you can trigger custom post-processing via shell scripts or system commands:
 
-```python
-# After successful rip
-subprocess.run(['/usr/local/bin/notify.sh', 'Rip complete', title])
+```bash
+# Trigger notification or post-processing
+/usr/local/bin/notify.sh "Rip complete" "$title"
 ```
 
 ## Performance Examples
