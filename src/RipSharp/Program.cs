@@ -54,6 +54,14 @@ public class Program
                     return providers;
                 });
 
+                services.AddSingleton<ITvEpisodeTitleProvider>(sp =>
+                {
+                    var notifier = sp.GetRequiredService<IProgressNotifier>();
+                    if (!string.IsNullOrWhiteSpace(tvdbKey))
+                        return new TvdbMetadataProvider(new HttpClient(), tvdbKey, notifier);
+                    return new NullEpisodeTitleProvider();
+                });
+
                 services.AddSingleton<IMetadataService, MetadataService>();
                 services.AddSingleton<IEncoderService, EncoderService>();
                 services.AddSingleton<IDiscRipper, DiscRipper>();

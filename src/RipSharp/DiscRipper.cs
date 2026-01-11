@@ -16,8 +16,9 @@ public class DiscRipper : IDiscRipper
     private readonly IProgressNotifier _notifier;
     private readonly IMakeMkvService _makeMkv;
     private readonly IUserPrompt _userPrompt;
+    private readonly ITvEpisodeTitleProvider _episodeTitles;
 
-    public DiscRipper(IDiscScanner scanner, IEncoderService encoder, IMetadataService metadata, IMakeMkvService makeMkv, IProgressNotifier notifier, IUserPrompt userPrompt)
+    public DiscRipper(IDiscScanner scanner, IEncoderService encoder, IMetadataService metadata, IMakeMkvService makeMkv, IProgressNotifier notifier, IUserPrompt userPrompt, ITvEpisodeTitleProvider episodeTitles)
     {
         _scanner = scanner;
         _encoder = encoder;
@@ -25,6 +26,7 @@ public class DiscRipper : IDiscRipper
         _makeMkv = makeMkv;
         _notifier = notifier;
         _userPrompt = userPrompt;
+        _episodeTitles = episodeTitles;
     }
 
     public async Task<List<string>> ProcessDiscAsync(RipOptions options)
@@ -251,7 +253,12 @@ public class DiscRipper : IDiscRipper
             {
                 var episodeIdx = options.Tv ? titleIds.IndexOf(titleId) : (int?)null;
                 var episodeNum = episodeIdx.HasValue ? (options.EpisodeStart - 1) + episodeIdx.Value + 1 : (int?)null;
-                var final = FileNaming.RenameFile(outputName, metadata!, episodeNum, options.Season, versionSuffix);
+                string? episodeTitle = null;
+                if (options.Tv && episodeNum.HasValue)
+                {
+                    episodeTitle = await _episodeTitles.GetEpisodeTitleAsync(metadata!.Title, options.Season, episodeNum.Value, metadata.Year);
+                }
+                var final = FileNaming.RenameFile(outputName, metadata!, episodeNum, options.Season, versionSuffix, episodeTitle);
                 finalFiles.Add(final);
             }
         }
