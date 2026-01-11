@@ -15,20 +15,20 @@ help:
 
 # Restore NuGet packages
 restore:
-	dotnet restore media-encoding.sln
+	dotnet restore RipSharp.sln
 
 # Build the solution
 build: restore
-	dotnet build media-encoding.sln
+	dotnet build RipSharp.sln
 
 # Run code formatter
 format: restore
-	dotnet format media-encoding.sln
+	dotnet format RipSharp.sln
 
 # Run tests
 test: build
-	dotnet test media-encoding.sln
+	dotnet test RipSharp.sln
 
 # Clean build outputs
 clean:
-	dotnet clean media-encoding.sln
+	dotnet clean RipSharp.sln
