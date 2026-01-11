@@ -70,7 +70,7 @@ public class DiscRipper : IDiscRipper
         if (options.AutoDetect && discInfo.DetectedContentType.HasValue)
         {
             var contentType = discInfo.DetectedContentType.Value ? "TV series" : "movie";
-            var emoji = discInfo.DetectedContentType.Value ? "\ud83d\udcfb " : "\ud83c\udfac "; // 📺 for TV, 🎬 for movie
+            var emoji = discInfo.DetectedContentType.Value ? "\ud83d\udcfa " : "\ud83c\udfac "; // 📺 for TV, 🎬 for movie
             var confidencePercent = (int)(discInfo.DetectionConfidence * 100);
             _notifier.Info($"{emoji}Detected as {contentType} (confidence: {confidencePercent}%)");
             options.Tv = discInfo.DetectedContentType.Value;

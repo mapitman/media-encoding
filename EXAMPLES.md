@@ -76,14 +76,16 @@ make rip-tv OUTPUT=~/TV EXTRA_ARGS='--title "Breaking Bad" --season 1'
 ### Rip a Single Movie
 
 ```bash
-# Basic movie rip
+# Basic movie rip (mode optional; auto-detect is default)
+dotnet run --project src/RipSharp -- --title "The Matrix" --year 1999 --output ~/Movies
+# Explicit movie mode
 dotnet run --project src/RipSharp -- --mode movie --title "The Matrix" --year 1999 --output ~/Movies
 
-# Movie with custom disc path
-dotnet run --project src/RipSharp -- --mode movie --disc /dev/sr0 --title "Inception" --year 2010 --output ~/Movies
+# Movie with custom disc path (mode optional)
+dotnet run --project src/RipSharp -- --disc /dev/sr0 --title "Inception" --year 2010 --output ~/Movies
 
-# Movie with custom temp directory
-dotnet run --project src/RipSharp -- --mode movie --title "The Dark Knight" --year 2008 \
+# Movie with custom temp directory (mode optional)
+dotnet run --project src/RipSharp -- --title "The Dark Knight" --year 2008 \
     --output ~/Movies --temp /mnt/scratch/temp
 ```
 

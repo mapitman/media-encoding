@@ -14,8 +14,9 @@ dotnet run --project src/RipSharp -- --help
 export TMDB_API_KEY="your_key_here"
 export OMDB_API_KEY="your_key_here"
 
-# 4) Rip a movie
-dotnet run --project src/RipSharp -- --output ~/Movies --mode movie
+# 4) Rip a movie (mode optional; auto-detect is default)
+dotnet run --project src/RipSharp -- --output ~/Movies
+dotnet run --project src/RipSharp -- --output ~/Movies --mode movie   # explicit
 
 # 5) Rip a TV season
 dotnet run --project src/RipSharp -- --output ~/TV --mode tv --title "Breaking Bad" --season 1
@@ -26,6 +27,8 @@ dotnet run --project src/RipSharp -- --output ~/TV --mode tv --title "Breaking B
 ### Movie Ripping
 
 ```bash
+# mode optional (auto-detect); set explicitly if you prefer
+dotnet run --project src/RipSharp -- --output ~/Movies --title "The Matrix" --year 1999
 dotnet run --project src/RipSharp -- --output ~/Movies --mode movie --title "The Matrix" --year 1999
 ```
 
@@ -52,7 +55,7 @@ This will:
 | Option | Value | Default | Description |
 |--------|-------|---------|-------------|
 | `--output` | `PATH` | *required* | Output directory for ripped files |
-| `--mode` | `movie\|tv` | *required* | Content type (movie for films, tv for series) |
+| `--mode` | `auto\|movie\|tv` | auto | Content type (auto-detect by default) |
 | `--disc` | `disc:N\|/dev/...` | `disc:0` | Optical drive path |
 | `--temp` | `PATH` | `{output}/.makemkv` | Temporary ripping directory |
 | `--title` | `TEXT` | *(disc title)* | Custom title for file naming |
@@ -139,12 +142,12 @@ dotnet restore src/RipSharp
 dotnet build src/RipSharp
 ```
 
-Then verify it works:
+Then verify it works (auto-detect by default):
 ```bash
-dotnet run --project src/RipSharp -- --output /tmp/test --mode movie
+dotnet run --project src/RipSharp -- --output /tmp/test
 ```
 
-*The app requires `--output` and `--mode` at minimum. See **Command-Line Options** above.*
+*The app requires `--output`; `--mode` is optional and defaults to auto-detect (movie vs TV).* See **Command-Line Options** above.
 
 ## How It Works
 

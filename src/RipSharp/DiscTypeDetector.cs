@@ -92,52 +92,72 @@ public class DiscTypeDetector : IDiscTypeDetector
             return null;
 
         var durations = titles.Select(t => t.DurationSeconds).OrderBy(d => d).ToList();
-        
-        // Calculate duration statistics
-        var avgDuration = durations.Average();
-        var minDuration = durations.First();
-        var maxDuration = durations.Last();
-        var durationVariance = CalculateVariance(durations);
-        var durationStdDev = Math.Sqrt(durationVariance);
 
-        // TV Series characteristics:
-        // - Most episodes have similar duration (low standard deviation)
-        // - Minimum and maximum are reasonably close (ratio < 1.5)
-        // - All episodes > 15 minutes (typically 20-45 min for TV)
+        // Thresholds and buckets
+        const int shortCutoffSeconds = 900;            // <= 15 min considered "short" (likely bonus/chapters)
+        const int tvMinSeconds = 1200;                  // 20 min
+        const int tvMaxSeconds = 3300;                  // 55 min
+        const int movieFeatureSeconds = 4800;           // 80 min main feature indicator
 
-        var durationRatio = maxDuration / (double)Math.Max(minDuration, 1);
+        var shortTitles = titles.Where(t => t.DurationSeconds <= shortCutoffSeconds).ToList();
+        var tvLikely = titles.Where(t => t.DurationSeconds >= tvMinSeconds && t.DurationSeconds <= tvMaxSeconds).ToList();
+        var longTitles = titles.Where(t => t.DurationSeconds > movieFeatureSeconds).ToList();
 
-        // Filter out very short titles (likely bonus content or chapters)
-        var substantialTitles = titles.Where(t => t.DurationSeconds > 900).ToList(); // > 15 min
-        var shortTitles = titles.Where(t => t.DurationSeconds <= 900).ToList();
-
-        // All titles are substantial and similar length -> TV series
-        if (substantialTitles.Count >= 3 && shortTitles.Count == 0)
+        // Heuristic: strong TV signal when most titles cluster in TV episode range with low variation
+        if (tvLikely.Count >= 3 && tvLikely.Count >= titles.Count * 0.6)
         {
-            var substantialDurations = substantialTitles.Select(t => t.DurationSeconds).ToList();
-            var substantialStdDev = Math.Sqrt(CalculateVariance(substantialDurations));
-            var substantialAvg = substantialDurations.Average();
-            var coefficientOfVariation = substantialStdDev / substantialAvg; // Lower = more consistent
+            var tvDurations = tvLikely.Select(t => t.DurationSeconds).ToList();
+            var tvStdDev = Math.Sqrt(CalculateVariance(tvDurations));
+            var tvAvg = tvDurations.Average();
+            var cv = tvStdDev / tvAvg; // coefficient of variation
 
-            // TV episodes typically have CV < 0.15 (15% variation)
-            if (coefficientOfVariation < 0.15)
+            if (cv < 0.15)
             {
-                _lastDetectionConfidence = 0.90;
+                _lastDetectionConfidence = 0.92;
                 return true;
             }
 
-            // CV between 0.15-0.25 suggests TV but less confident
-            if (coefficientOfVariation < 0.25)
+            if (cv < 0.25)
             {
-                _lastDetectionConfidence = 0.70;
+                _lastDetectionConfidence = 0.78;
                 return true;
             }
         }
 
-        // Movie with bonus content: most titles are short, 1-2 are long
-        if (shortTitles.Count >= 2 && substantialTitles.Count <= 2)
+        // If there is one very long title and many shorts, likely a movie with bonus content
+        if (longTitles.Count == 1 && shortTitles.Count >= 2 && titles.Count >= 4)
         {
-            _lastDetectionConfidence = 0.80;
+            _lastDetectionConfidence = 0.85;
+            return false;
+        }
+
+        // If there are 2 long titles and few tv-length titles, treat as movie (alt cuts)
+        if (longTitles.Count == 2 && tvLikely.Count <= 1)
+        {
+            _lastDetectionConfidence = 0.75;
+            return false;
+        }
+
+        // If all titles are substantial (no shorts) and low variance overall, lean TV
+        var substantial = titles.Where(t => t.DurationSeconds > shortCutoffSeconds).ToList();
+        if (substantial.Count >= 3 && shortTitles.Count == 0)
+        {
+            var substDurations = substantial.Select(t => t.DurationSeconds).ToList();
+            var stdDev = Math.Sqrt(CalculateVariance(substDurations));
+            var avg = substDurations.Average();
+            var cv = stdDev / avg;
+
+            if (cv < 0.18)
+            {
+                _lastDetectionConfidence = 0.8;
+                return true;
+            }
+        }
+
+        // Movie default when many shorts and few substantial titles
+        if (shortTitles.Count >= 3 && substantial.Count <= 2)
+        {
+            _lastDetectionConfidence = 0.7;
             return false;
         }
 

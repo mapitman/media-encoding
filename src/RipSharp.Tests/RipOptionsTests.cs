@@ -179,6 +179,38 @@ public class RipOptionsTests
     }
 
     [Fact]
+    public void ParseArgs_WithModeAuto_SetsAutoDetectTrue_LeavesTvDefaultFalse()
+    {
+        var args = new[] { "--output", "/tmp/movies", "--mode", "auto" };
+
+        var result = RipOptions.ParseArgs(args);
+
+        result.AutoDetect.Should().BeTrue();
+        result.Tv.Should().BeFalse();
+    }
+
+    [Fact]
+    public void ParseArgs_WithTvFlag_DisablesAutoDetectAndSetsTvTrue()
+    {
+        var args = new[] { "--output", "/tmp/movies", "--tv" };
+
+        var result = RipOptions.ParseArgs(args);
+
+        result.AutoDetect.Should().BeFalse();
+        result.Tv.Should().BeTrue();
+    }
+
+    [Fact]
+    public void ParseArgs_DefaultsToAutoDetectWhenModeNotProvided()
+    {
+        var args = new[] { "--output", "/tmp/movies" };
+
+        var result = RipOptions.ParseArgs(args);
+
+        result.AutoDetect.Should().BeTrue();
+    }
+
+    [Fact]
     public void ParseArgs_WithModeUpperCase_IsCaseInsensitive()
     {
         var args = new[] { "--output", "/tmp/movies", "--mode", "MOVIE" };
@@ -205,7 +237,7 @@ public class RipOptionsTests
 
         Action act = () => RipOptions.ParseArgs(args);
 
-        act.Should().Throw<ArgumentException>().WithMessage("--mode must be 'movie' or 'tv'");
+        act.Should().Throw<ArgumentException>().WithMessage("--mode must be 'movie', 'tv', or 'auto'");
     }
 
     [Fact]
