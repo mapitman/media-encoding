@@ -13,7 +13,7 @@ public class TitleVariationGeneratorEdgeCasesTests
     {
         var result = TitleVariationGenerator.Generate("");
 
-        Assert.Equal(new[] { "" }, result);
+        result.Should().Equal(new[] { "" });
     }
 
     [Fact]
@@ -22,8 +22,8 @@ public class TitleVariationGeneratorEdgeCasesTests
         var result = TitleVariationGenerator.Generate("___---");
 
         // The algorithm strips each trailing separator, which is expected behavior
-        Assert.Contains("___---", result);
-        Assert.True(result.Count > 1);
+        result.Should().Contain("___---");
+        result.Count.Should().BeGreaterThan(1);
     }
 
     [Fact]
@@ -31,7 +31,7 @@ public class TitleVariationGeneratorEdgeCasesTests
     {
         var result = TitleVariationGenerator.Generate("A");
 
-        Assert.Equal(new[] { "A" }, result);
+        result.Should().Equal(new[] { "A" });
     }
 
     [Fact]
@@ -39,7 +39,7 @@ public class TitleVariationGeneratorEdgeCasesTests
     {
         var result = TitleVariationGenerator.Generate("Movie Title   ");
 
-        Assert.Equal(new[] { "Movie Title   ", "Movie" }, result);
+        result.Should().Equal(new[] { "Movie Title   ", "Movie" });
     }
 
     [Fact]
@@ -48,9 +48,9 @@ public class TitleVariationGeneratorEdgeCasesTests
         var result = TitleVariationGenerator.Generate("Title___Part___A");
 
         // The algorithm strips one non-alphanumeric at a time, which creates intermediate variations
-        Assert.Contains("Title___Part___A", result);
-        Assert.Contains("Title___Part", result);
-        Assert.Contains("Title", result);
+        result.Should().Contain("Title___Part___A");
+        result.Should().Contain("Title___Part");
+        result.Should().Contain("Title");
     }
 
     [Fact]
@@ -59,8 +59,8 @@ public class TitleVariationGeneratorEdgeCasesTests
         var result = TitleVariationGenerator.Generate("Movie™_Title®");
 
         // ™ and ® are non-alphanumeric, so they get stripped
-        Assert.Contains("Movie™_Title®", result);
-        Assert.Contains("Movie", result);
+        result.Should().Contain("Movie™_Title®");
+        result.Should().Contain("Movie");
     }
 
     [Theory]
@@ -71,7 +71,7 @@ public class TitleVariationGeneratorEdgeCasesTests
     {
         var result = TitleVariationGenerator.Generate(input);
 
-        Assert.Equal(expected, result);
+        result.Should().Equal(expected);
     }
 
     [Fact]
@@ -79,6 +79,6 @@ public class TitleVariationGeneratorEdgeCasesTests
     {
         var result = TitleVariationGenerator.Generate("Movie-Title_Part 2023");
 
-        Assert.Equal(new[] { "Movie-Title_Part 2023", "Movie-Title_Part", "Movie-Title", "Movie" }, result);
+        result.Should().Equal(new[] { "Movie-Title_Part 2023", "Movie-Title_Part", "Movie-Title", "Movie" });
     }
 }

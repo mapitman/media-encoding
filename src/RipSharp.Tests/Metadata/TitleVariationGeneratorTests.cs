@@ -18,6 +18,6 @@ public class TitleVariationGeneratorTests
     {
         var result = TitleVariationGenerator.Generate(input);
 
-        Assert.Equal(expected, result);
+        result.Should().Equal(expected);
     }
 }

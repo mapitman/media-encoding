@@ -130,7 +130,7 @@ public class OmdbMetadataProviderTests
         // Assert
         handler.RequestUri.Should().NotBeNull();
         var url = handler.RequestUri!.ToString();
-        Assert.Contains("&y=2021", url);
+        url.Should().Contain("&y=2021");
     }
 
     [Fact]

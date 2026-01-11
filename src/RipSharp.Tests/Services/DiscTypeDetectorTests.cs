@@ -22,8 +22,8 @@ public class DiscTypeDetectorTests
 
         var (isTV, confidence) = detector.DetectContentType(disc);
 
-        Assert.False(isTV);
-        Assert.True(confidence >= 0.9);
+        isTV.Should().BeFalse();
+        confidence.Should().BeGreaterThanOrEqualTo(0.9);
     }
 
     [Fact]
@@ -43,8 +43,8 @@ public class DiscTypeDetectorTests
 
         var (isTV, confidence) = detector.DetectContentType(disc);
 
-        Assert.True(isTV);
-        Assert.True(confidence >= 0.75);
+        isTV.Should().BeTrue();
+        confidence.Should().BeGreaterThanOrEqualTo(0.75);
     }
 
     [Fact]
@@ -64,8 +64,8 @@ public class DiscTypeDetectorTests
 
         var (isTV, confidence) = detector.DetectContentType(disc);
 
-        Assert.False(isTV);
-        Assert.True(confidence >= 0.7);
+        isTV.Should().BeFalse();
+        confidence.Should().BeGreaterThanOrEqualTo(0.7);
     }
 
     [Fact]
@@ -84,8 +84,8 @@ public class DiscTypeDetectorTests
 
         var (isTV, confidence) = detector.DetectContentType(disc);
 
-        Assert.Null(isTV);
-        Assert.True(confidence <= 0.8);
+        isTV.Should().BeNull();
+        confidence.Should().BeLessThanOrEqualTo(0.8);
     }
 
     [Fact]
@@ -106,8 +106,8 @@ public class DiscTypeDetectorTests
         var (isTV, confidence) = detector.DetectContentType(disc);
 
         // This scenario returns null (uncertain), not movie - adjusting expectation
-        Assert.Null(isTV); // The mixed durations make detection uncertain
-        Assert.True(confidence < 0.70,
+        isTV.Should().BeNull(); // The mixed durations make detection uncertain
+        confidence.Should().BeLessThan(0.70,
             $"Expected confidence < 0.70, but got {confidence}");
     }
 
@@ -127,8 +127,8 @@ public class DiscTypeDetectorTests
         var (isTV, confidence) = detector.DetectContentType(disc);
 
         // Should detect as movie with high confidence (above 70% threshold)
-        Assert.False(isTV);
-        Assert.True(confidence >= 0.70,
+        isTV.Should().BeFalse();
+        confidence.Should().BeGreaterThanOrEqualTo(0.70,
             $"Expected confidence >= 0.70, but got {confidence}");
     }
 
@@ -152,8 +152,8 @@ public class DiscTypeDetectorTests
         var (isTV, confidence) = detector.DetectContentType(disc);
 
         // Should detect as TV with high confidence (above 70% threshold)
-        Assert.True(isTV);
-        Assert.True(confidence >= 0.70,
+        isTV.Should().BeTrue();
+        confidence.Should().BeGreaterThanOrEqualTo(0.70,
             $"Expected confidence >= 0.70, but got {confidence}");
     }
 
@@ -174,7 +174,7 @@ public class DiscTypeDetectorTests
 
         // Should handle zero durations without throwing division by zero
         // null is acceptable for zero-duration titles (uncertain)
-        Assert.True(confidence >= 0 && confidence <= 1);
+        confidence.Should().BeInRange(0, 1);
     }
 
     [Fact]
@@ -195,6 +195,6 @@ public class DiscTypeDetectorTests
 
         // AnalyzeTwoTitles should return uncertain/low confidence for potential TV episodes
         // Since they're similar length and in TV range, it's uncertain
-        Assert.True(!isTV.HasValue || !isTV.Value); // Either null or false (movie)
+        (!isTV.HasValue || !isTV.Value).Should().BeTrue(); // Either null or false (movie)
     }
 }
