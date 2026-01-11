@@ -52,7 +52,7 @@ public class MetadataServiceTests : IDisposable
         var notifier = Substitute.For<IProgressNotifier>();
         var provider1 = Substitute.For<IMetadataProvider>();
         provider1.Name.Returns("Provider1");
-        provider1.LookupAsync("test", false, null).Returns(new Metadata { Title = "Test Movie", Year = 2020, Type = "movie" });
+        provider1.LookupAsync("test", false, null).Returns(new MetadataInfo { Title = "Test Movie", Year = 2020, Type = "movie" });
         
         var provider2 = Substitute.For<IMetadataProvider>();
         provider2.Name.Returns("Provider2");
@@ -78,11 +78,11 @@ public class MetadataServiceTests : IDisposable
         var notifier = Substitute.For<IProgressNotifier>();
         var provider1 = Substitute.For<IMetadataProvider>();
         provider1.Name.Returns("Provider1");
-        provider1.LookupAsync("test", false, null).Returns((Metadata?)null);
+        provider1.LookupAsync("test", false, null).Returns((MetadataInfo?)null);
         
         var provider2 = Substitute.For<IMetadataProvider>();
         provider2.Name.Returns("Provider2");
-        provider2.LookupAsync("test", false, null).Returns(new Metadata { Title = "Test Movie", Year = 2021, Type = "movie" });
+        provider2.LookupAsync("test", false, null).Returns(new MetadataInfo { Title = "Test Movie", Year = 2021, Type = "movie" });
         
         var providers = new List<IMetadataProvider> { provider1, provider2 };
         var svc = new MetadataService(providers, notifier);
@@ -105,8 +105,8 @@ public class MetadataServiceTests : IDisposable
         var notifier = Substitute.For<IProgressNotifier>();
         var provider = Substitute.For<IMetadataProvider>();
         provider.Name.Returns("TestProvider");
-        provider.LookupAsync("MOVIE_TITLE_2023", Arg.Any<bool>(), Arg.Any<int?>()).Returns((Metadata?)null);
-        provider.LookupAsync("MOVIE_TITLE", Arg.Any<bool>(), Arg.Any<int?>()).Returns(new Metadata { Title = "Movie Title", Year = 2023, Type = "movie" });
+        provider.LookupAsync("MOVIE_TITLE_2023", Arg.Any<bool>(), Arg.Any<int?>()).Returns((MetadataInfo?)null);
+        provider.LookupAsync("MOVIE_TITLE", Arg.Any<bool>(), Arg.Any<int?>()).Returns(new MetadataInfo { Title = "Movie Title", Year = 2023, Type = "movie" });
         
         var providers = new List<IMetadataProvider> { provider };
         var svc = new MetadataService(providers, notifier);
@@ -129,8 +129,8 @@ public class MetadataServiceTests : IDisposable
         var notifier = Substitute.For<IProgressNotifier>();
         var provider = Substitute.For<IMetadataProvider>();
         provider.Name.Returns("TestProvider");
-        provider.LookupAsync("SIMPSONS_WS", Arg.Any<bool>(), Arg.Any<int?>()).Returns((Metadata?)null);
-        provider.LookupAsync("SIMPSONS", Arg.Any<bool>(), Arg.Any<int?>()).Returns(new Metadata { Title = "The Simpsons", Year = 1989, Type = "tv" });
+        provider.LookupAsync("SIMPSONS_WS", Arg.Any<bool>(), Arg.Any<int?>()).Returns((MetadataInfo?)null);
+        provider.LookupAsync("SIMPSONS", Arg.Any<bool>(), Arg.Any<int?>()).Returns(new MetadataInfo { Title = "The Simpsons", Year = 1989, Type = "tv" });
         
         var providers = new List<IMetadataProvider> { provider };
         var svc = new MetadataService(providers, notifier);
@@ -152,7 +152,7 @@ public class MetadataServiceTests : IDisposable
         var notifier = Substitute.For<IProgressNotifier>();
         var provider = Substitute.For<IMetadataProvider>();
         provider.Name.Returns("TestProvider");
-        provider.LookupAsync("Test Movie", Arg.Any<bool>(), Arg.Any<int?>()).Returns(new Metadata { Title = "Test Movie", Year = 2020, Type = "movie" });
+        provider.LookupAsync("Test Movie", Arg.Any<bool>(), Arg.Any<int?>()).Returns(new MetadataInfo { Title = "Test Movie", Year = 2020, Type = "movie" });
         
         var providers = new List<IMetadataProvider> { provider };
         var svc = new MetadataService(providers, notifier);
