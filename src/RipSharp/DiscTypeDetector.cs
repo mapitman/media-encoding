@@ -83,8 +83,6 @@ public class DiscTypeDetector : IDiscTypeDetector
         if (titles.Count < 3)
             return (null, 0.5);
 
-        var durations = titles.Select(t => t.DurationSeconds).OrderBy(d => d).ToList();
-
         // Thresholds and buckets
         const int shortCutoffSeconds = 900;            // <= 15 min considered "short" (likely bonus/chapters)
         const int tvMinSeconds = 1200;                  // 20 min
