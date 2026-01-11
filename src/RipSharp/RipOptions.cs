@@ -9,6 +9,7 @@ public class RipOptions
     public string Output { get; set; } = string.Empty;
     public string? Temp { get; set; }
     public bool Tv { get; set; }
+    public bool AutoDetect { get; set; } = true; // Auto-detect content type by default
     public string? Title { get; set; }
     public int? Year { get; set; }
     public int Season { get; set; } = 1;
@@ -37,12 +38,27 @@ public class RipOptions
                 case "--disc": opts.Disc = next() ?? opts.Disc; break;
                 case "--output": opts.Output = next() ?? opts.Output; break;
                 case "--temp": opts.Temp = next(); break;
-                case "--tv": opts.Tv = true; break;
+                case "--tv": opts.Tv = true; opts.AutoDetect = false; break;
                 case "--mode":
-                    var mode = next()?.ToLowerInvariant();
-                    if (mode == "tv" || mode == "series") opts.Tv = true;
-                    else if (mode == "movie" || mode == "film") opts.Tv = false;
-                    else throw new ArgumentException("--mode must be 'movie' or 'tv'");
+                    var mode = next();
+                    if (mode == null)
+                        throw new ArgumentException("--mode requires a value");
+                    var modeLower = mode.ToLowerInvariant();
+                    if (modeLower == "tv" || modeLower == "series") 
+                    { 
+                        opts.Tv = true; 
+                        opts.AutoDetect = false;
+                    }
+                    else if (modeLower == "movie" || modeLower == "film") 
+                    { 
+                        opts.Tv = false;
+                        opts.AutoDetect = false;
+                    }
+                    else if (modeLower == "auto" || modeLower == "detect")
+                    {
+                        opts.AutoDetect = true;
+                    }
+                    else throw new ArgumentException("--mode must be 'movie', 'tv', or 'auto'");
                     break;
                 case "--title": opts.Title = next(); break;
                 case "--year": if (int.TryParse(next(), out var y)) opts.Year = y; break;
@@ -72,9 +88,12 @@ public class RipOptions
         Console.WriteLine();
         Console.WriteLine("REQUIRED OPTIONS:");
         Console.WriteLine("    --output PATH           Output directory for ripped files");
-        Console.WriteLine("    --mode movie|tv         Content type (movie for films, tv for series)");
         Console.WriteLine();
         Console.WriteLine("OPTIONS:");
+        Console.WriteLine("    --mode auto|movie|tv    Content type detection (default: auto)");
+        Console.WriteLine("                            - auto: Automatically detect movie vs TV series");
+        Console.WriteLine("                            - movie: Treat as single movie");
+        Console.WriteLine("                            - tv: Treat as TV series");
         Console.WriteLine("    --disc PATH             Optical drive path (default: disc:0)");
         Console.WriteLine("    --temp PATH             Temporary ripping directory (default: {output}/.makemkv)");
         Console.WriteLine("    --title TEXT            Custom title for file naming");
@@ -86,14 +105,17 @@ public class RipOptions
         Console.WriteLine("    -h, --help              Show this help message");
         Console.WriteLine();
         Console.WriteLine("EXAMPLES:");
-        Console.WriteLine("    # Rip a movie");
+        Console.WriteLine("    # Rip with auto-detection (recommended)");
+        Console.WriteLine("    dotnet run --project src/MediaEncoding -- --output ~/Movies --title \"The Matrix\" --year 1999");
+        Console.WriteLine();
+        Console.WriteLine("    # Rip a movie (explicit)");
         Console.WriteLine("    dotnet run --project src/MediaEncoding -- --output ~/Movies --mode movie --title \"The Matrix\" --year 1999");
         Console.WriteLine();
-        Console.WriteLine("    # Rip a TV season");
+        Console.WriteLine("    # Rip a TV season (explicit)");
         Console.WriteLine("    dotnet run --project src/MediaEncoding -- --output ~/TV --mode tv --title \"Breaking Bad\" --season 1");
         Console.WriteLine();
         Console.WriteLine("    # Use second disc drive");
-        Console.WriteLine("    dotnet run --project src/MediaEncoding -- --output ~/Movies --mode movie --disc disc:1");
+        Console.WriteLine("    dotnet run --project src/MediaEncoding -- --output ~/Movies --disc disc:1");
         Console.WriteLine();
         Console.WriteLine("ENVIRONMENT VARIABLES:");
         Console.WriteLine("    TMDB_API_KEY            TMDB API key for metadata lookup (recommended)");
