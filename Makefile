@@ -6,7 +6,7 @@ all: build test
 # Show available targets
 help:
 	@echo "Available targets:"
-	@echo "  make all       - Build the solution (default)"
+	@echo "  make all       - Build and test the solution (default)"
 	@echo "  make restore   - Restore NuGet packages"
 	@echo "  make build     - Build the solution"
 	@echo "  make format    - Run dotnet format"
