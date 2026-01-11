@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -29,6 +30,25 @@ public class Program
                 services.AddSingleton<IProcessRunner, ProcessRunner>();
                 services.AddSingleton<IMakeMkvService, MakeMkvService>();
                 services.AddSingleton<IDiscScanner, DiscScanner>();
+
+                // Register metadata providers
+                var omdbKey = Environment.GetEnvironmentVariable("OMDB_API_KEY");
+                var tmdbKey = Environment.GetEnvironmentVariable("TMDB_API_KEY");
+
+                services.AddSingleton<IEnumerable<IMetadataProvider>>(sp =>
+                {
+                    var notifier = sp.GetRequiredService<IProgressNotifier>();
+                    var httpClient = new HttpClient();
+                    var providers = new List<IMetadataProvider>();
+
+                    if (!string.IsNullOrWhiteSpace(omdbKey))
+                        providers.Add(new OmdbMetadataProvider(httpClient, omdbKey, notifier));
+                    if (!string.IsNullOrWhiteSpace(tmdbKey))
+                        providers.Add(new TmdbMetadataProvider(httpClient, tmdbKey, notifier));
+
+                    return providers;
+                });
+
                 services.AddSingleton<IMetadataService, MetadataService>();
                 services.AddSingleton<IEncoderService, EncoderService>();
                 services.AddSingleton<IDiscRipper, DiscRipper>();
