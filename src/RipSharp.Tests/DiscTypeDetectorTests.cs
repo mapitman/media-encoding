@@ -193,6 +193,6 @@ public class DiscTypeDetectorTests
 
         // AnalyzeTwoTitles should return uncertain/low confidence for potential TV episodes
         // Since they're similar length and in TV range, it's uncertain
-        Assert.False(isTV.HasValue || (isTV.HasValue && !isTV.Value)); // Either null or false (movie)
+        Assert.True(!isTV.HasValue || !isTV.Value); // Either null or false (movie)
     }
 }
