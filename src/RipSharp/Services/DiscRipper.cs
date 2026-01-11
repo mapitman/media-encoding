@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-using Spectre.Console;
 
 namespace RipSharp.Services;
 
@@ -14,12 +13,13 @@ public class DiscRipper : IDiscRipper
     private readonly IDiscScanner _scanner;
     private readonly IEncoderService _encoder;
     private readonly IMetadataService _metadata;
-    private readonly IProgressNotifier _notifier;
+    private readonly IConsoleWriter _notifier;
     private readonly IMakeMkvService _makeMkv;
     private readonly IUserPrompt _userPrompt;
     private readonly ITvEpisodeTitleProvider _episodeTitles;
+    private readonly IProgressDisplay _progressDisplay;
 
-    public DiscRipper(IDiscScanner scanner, IEncoderService encoder, IMetadataService metadata, IMakeMkvService makeMkv, IProgressNotifier notifier, IUserPrompt userPrompt, ITvEpisodeTitleProvider episodeTitles)
+    public DiscRipper(IDiscScanner scanner, IEncoderService encoder, IMetadataService metadata, IMakeMkvService makeMkv, IConsoleWriter notifier, IUserPrompt userPrompt, ITvEpisodeTitleProvider episodeTitles, IProgressDisplay progressDisplay)
     {
         _scanner = scanner;
         _encoder = encoder;
@@ -28,6 +28,7 @@ public class DiscRipper : IDiscRipper
         _notifier = notifier;
         _userPrompt = userPrompt;
         _episodeTitles = episodeTitles;
+        _progressDisplay = progressDisplay;
     }
 
     public async Task<List<string>> ProcessDiscAsync(RipOptions options)
@@ -140,25 +141,12 @@ public class DiscRipper : IDiscRipper
             var progressLogPath = Path.Combine(options.Temp!, $"progress_title_{titleId:D2}.log");
             if (File.Exists(progressLogPath)) File.Delete(progressLogPath);
 
-            await AnsiConsole.Progress()
-                .AutoRefresh(true)
-                .AutoClear(false)
-                .HideCompleted(false)
-                .Columns(new ProgressColumn[]
-                {
-                    new TaskDescriptionColumn(),
-                    new ElapsedTimeColumn { Style = Color.Green },
-                    new ProgressBarColumn(),
-                    new PercentageColumn{ Style = Color.Yellow },
-                    new RemainingTimeColumn { Style = Color.Blue },
-                    new SpinnerColumn(),
-                })
-                .StartAsync(async ctx =>
-                {
-                    var expectedBytes = titleInfo?.ReportedSizeBytes ?? 0;
-                    var maxValue = expectedBytes > 0 ? expectedBytes : 100;
-                    var task = ctx.AddTask($"[{ConsoleColors.Success}]Title {idx + 1} ({idx + 1}/{totalTitles})[/]", maxValue: maxValue);
-                    bool ripDone = false;
+            await _progressDisplay.ExecuteAsync(async ctx =>
+            {
+                var expectedBytes = titleInfo?.ReportedSizeBytes ?? 0;
+                var maxValue = expectedBytes > 0 ? expectedBytes : 100;
+                var task = ctx.AddTask($"[{ConsoleColors.Success}]Title {idx + 1} ({idx + 1}/{totalTitles})[/]", maxValue);
+                bool ripDone = false;
 
                     var pollTask = Task.Run(async () =>
                     {
@@ -180,7 +168,7 @@ public class DiscRipper : IDiscRipper
                                 {
                                     var size = new FileInfo(currentMkv).Length;
                                     lastSizeLocal = Math.Max(lastSizeLocal, size);
-                                    task.Value = Math.Min(expectedBytes, lastSizeLocal);
+                                    task.Value = (long)Math.Min(expectedBytes, lastSizeLocal);
                                 }
                             }
                             catch { }
@@ -189,7 +177,7 @@ public class DiscRipper : IDiscRipper
                     });
 
                     var rawLogPath = Path.Combine(options.Temp!, $"makemkv_title_{titleId:D2}.log");
-                    var handler = new MakeMkvOutputHandler(expectedBytes, idx, totalTitles, task, progressLogPath, rawLogPath);
+                    var handler = new MakeMkvOutputHandler(expectedBytes, idx, totalTitles, task, progressLogPath, rawLogPath, _notifier);
                     var exit = await _makeMkv.RipTitleAsync(options.Disc, titleId, options.Temp!,
                         onOutput: handler.HandleLine,
                         onError: errLine =>
