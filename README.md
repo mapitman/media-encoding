@@ -13,6 +13,8 @@ dotnet run --project src/RipSharp -- --help
 # 3) Set API keys (optional but recommended)
 export TMDB_API_KEY="your_key_here"
 export OMDB_API_KEY="your_key_here"
+# Optional: TVDB (for episode titles) — implementation in progress (issue #37)
+export TVDB_API_KEY="your_key_here"
 
 # 4) Rip a movie (mode optional; auto-detect is default)
 dotnet run --project src/RipSharp -- --output ~/Movies
@@ -73,6 +75,7 @@ This will:
 ```bash
 export TMDB_API_KEY="your_tmdb_api_key"      # Primary metadata source
 export OMDB_API_KEY="your_omdb_api_key"      # Fallback metadata source
+export TVDB_API_KEY="your_tvdb_api_key"      # TV episode titles (in progress)
 ```
 
 To make permanent, add to `~/.bashrc`, `~/.zshrc`, or equivalent:
@@ -81,6 +84,7 @@ To make permanent, add to `~/.bashrc`, `~/.zshrc`, or equivalent:
 # ~/.bashrc or ~/.zshrc
 export TMDB_API_KEY="your_tmdb_api_key"
 export OMDB_API_KEY="your_omdb_api_key"
+export TVDB_API_KEY="your_tvdb_api_key"
 ```
 
 ### Config File (Alternative)
@@ -217,8 +221,9 @@ See [EXAMPLES.md](EXAMPLES.md) for additional examples including:
 ```yaml
    metadata:
      lookup_enabled: true
-     omdb_api_key: "your_omdb_api_key"
-     tmdb_api_key: "your_tmdb_api_key"
+   omdb_api_key: "your_omdb_api_key"
+   tmdb_api_key: "your_tmdb_api_key"
+   tvdb_api_key: "your_tvdb_api_key"  # optional, issue #37 (in progress)
 ```
 
 ## Output Formats

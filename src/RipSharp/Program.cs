@@ -36,6 +36,7 @@ public class Program
                 // Register metadata providers
                 var omdbKey = Environment.GetEnvironmentVariable("OMDB_API_KEY");
                 var tmdbKey = Environment.GetEnvironmentVariable("TMDB_API_KEY");
+                var tvdbKey = Environment.GetEnvironmentVariable("TVDB_API_KEY");
 
                 services.AddSingleton<IEnumerable<IMetadataProvider>>(sp =>
                 {
@@ -47,6 +48,8 @@ public class Program
                         providers.Add(new OmdbMetadataProvider(httpClient, omdbKey, notifier));
                     if (!string.IsNullOrWhiteSpace(tmdbKey))
                         providers.Add(new TmdbMetadataProvider(httpClient, tmdbKey, notifier));
+                    if (!string.IsNullOrWhiteSpace(tvdbKey))
+                        providers.Add(new TvdbMetadataProvider(httpClient, tvdbKey, notifier));
 
                     return providers;
                 });
