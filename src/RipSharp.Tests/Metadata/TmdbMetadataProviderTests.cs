@@ -19,16 +19,13 @@ public class TmdbMetadataProviderTests
     [Fact]
     public async Task LookupAsync_ReturnsMetadata_WhenMovieFound()
     {
-        // Arrange
         var json = @"{""results"":[{""title"":""The Matrix"",""release_date"":""1999-03-31""}]}";
         var httpClient = CreateHttpClient(json);
         var notifier = Substitute.For<IProgressNotifier>();
         var provider = new TmdbMetadataProvider(httpClient, "test-key", notifier);
 
-        // Act
         var result = await provider.LookupAsync("the matrix", isTv: false, year: null);
 
-        // Assert
         result.Should().NotBeNull();
         result!.Title.Should().Be("The Matrix");
         result.Year.Should().Be(1999);
@@ -38,16 +35,13 @@ public class TmdbMetadataProviderTests
     [Fact]
     public async Task LookupAsync_ReturnsMetadata_WhenTvSeriesFound()
     {
-        // Arrange
         var json = @"{""results"":[{""name"":""Game of Thrones"",""first_air_date"":""2011-04-17""}]}";
         var httpClient = CreateHttpClient(json);
         var notifier = Substitute.For<IProgressNotifier>();
         var provider = new TmdbMetadataProvider(httpClient, "test-key", notifier);
 
-        // Act
         var result = await provider.LookupAsync("game of thrones", isTv: true, year: null);
 
-        // Assert
         result.Should().NotBeNull();
         result!.Title.Should().Be("Game of Thrones");
         result.Year.Should().Be(2011);
@@ -57,55 +51,45 @@ public class TmdbMetadataProviderTests
     [Fact]
     public async Task LookupAsync_ReturnsNull_WhenNoResultsFound()
     {
-        // Arrange
         var json = @"{""results"":[]}";
         var httpClient = CreateHttpClient(json);
         var notifier = Substitute.For<IProgressNotifier>();
         var provider = new TmdbMetadataProvider(httpClient, "test-key", notifier);
 
-        // Act
         var result = await provider.LookupAsync("nonexistent movie", isTv: false, year: null);
 
-        // Assert
         result.Should().BeNull();
     }
 
     [Fact]
     public async Task LookupAsync_ReturnsNull_WhenJsonMalformed()
     {
-        // Arrange
         var json = @"{invalid json}";
         var httpClient = CreateHttpClient(json);
         var notifier = Substitute.For<IProgressNotifier>();
         var provider = new TmdbMetadataProvider(httpClient, "test-key", notifier);
 
-        // Act
         var result = await provider.LookupAsync("test", isTv: false, year: null);
 
-        // Assert
         result.Should().BeNull();
     }
 
     [Fact]
     public async Task LookupAsync_ReturnsNull_WhenHttpRequestFails()
     {
-        // Arrange
         var handler = new FakeHttpMessageHandler(HttpStatusCode.ServiceUnavailable);
         var httpClient = new HttpClient(handler);
         var notifier = Substitute.For<IProgressNotifier>();
         var provider = new TmdbMetadataProvider(httpClient, "test-key", notifier);
 
-        // Act
         var result = await provider.LookupAsync("test", isTv: false, year: null);
 
-        // Assert
         result.Should().BeNull();
     }
 
     [Fact]
     public void Name_ReturnsTMDB()
     {
-        // Arrange
         var httpClient = new HttpClient();
         var notifier = Substitute.For<IProgressNotifier>();
         var provider = new TmdbMetadataProvider(httpClient, "test-key", notifier);
@@ -117,16 +101,13 @@ public class TmdbMetadataProviderTests
     [Fact]
     public async Task LookupAsync_HandlesMovieWithoutReleaseDate()
     {
-        // Arrange
         var json = @"{""results"":[{""title"":""Upcoming Movie""}]}";
         var httpClient = CreateHttpClient(json);
         var notifier = Substitute.For<IProgressNotifier>();
         var provider = new TmdbMetadataProvider(httpClient, "test-key", notifier);
 
-        // Act
         var result = await provider.LookupAsync("upcoming", isTv: false, year: 2025);
 
-        // Assert
         result.Should().NotBeNull();
         result!.Title.Should().Be("Upcoming Movie");
         result.Year.Should().Be(2025); // Falls back to provided year
@@ -135,16 +116,13 @@ public class TmdbMetadataProviderTests
     [Fact]
     public async Task LookupAsync_HandlesTvWithoutAirDate()
     {
-        // Arrange
         var json = @"{""results"":[{""name"":""New Series""}]}";
         var httpClient = CreateHttpClient(json);
         var notifier = Substitute.For<IProgressNotifier>();
         var provider = new TmdbMetadataProvider(httpClient, "test-key", notifier);
 
-        // Act
         var result = await provider.LookupAsync("new series", isTv: true, year: 2026);
 
-        // Assert
         result.Should().NotBeNull();
         result!.Title.Should().Be("New Series");
         result.Year.Should().Be(2026); // Falls back to provided year
@@ -153,16 +131,13 @@ public class TmdbMetadataProviderTests
     [Fact]
     public async Task LookupAsync_HandlesShortDateString()
     {
-        // Arrange
         var json = @"{""results"":[{""title"":""Test Movie"",""release_date"":""202""}]}";
         var httpClient = CreateHttpClient(json);
         var notifier = Substitute.For<IProgressNotifier>();
         var provider = new TmdbMetadataProvider(httpClient, "test-key", notifier);
 
-        // Act
         var result = await provider.LookupAsync("test", isTv: false, year: 2020);
 
-        // Assert
         result.Should().NotBeNull();
         result!.Year.Should().Be(2020); // Falls back when date string too short
     }
@@ -170,16 +145,13 @@ public class TmdbMetadataProviderTests
     [Fact]
     public async Task LookupAsync_UsesFirstResult_WhenMultipleResults()
     {
-        // Arrange
         var json = @"{""results"":[{""title"":""First Movie"",""release_date"":""2020-01-01""},{""title"":""Second Movie"",""release_date"":""2021-01-01""}]}";
         var httpClient = CreateHttpClient(json);
         var notifier = Substitute.For<IProgressNotifier>();
         var provider = new TmdbMetadataProvider(httpClient, "test-key", notifier);
 
-        // Act
         var result = await provider.LookupAsync("movie", isTv: false, year: null);
 
-        // Assert
         result.Should().NotBeNull();
         result!.Title.Should().Be("First Movie");
         result.Year.Should().Be(2020);

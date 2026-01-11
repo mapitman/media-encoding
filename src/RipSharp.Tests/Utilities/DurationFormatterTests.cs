@@ -12,6 +12,7 @@ public class DurationFormatterTests
     public void Format_ReturnsUnknownDuration_WhenSecondsIsZero()
     {
         var result = DurationFormatter.Format(0);
+
         result.Should().Be("Unknown duration");
     }
 
@@ -19,6 +20,7 @@ public class DurationFormatterTests
     public void Format_ReturnsUnknownDuration_WhenSecondsIsNegative()
     {
         var result = DurationFormatter.Format(-100);
+
         result.Should().Be("Unknown duration");
     }
 
@@ -34,6 +36,7 @@ public class DurationFormatterTests
     public void Format_ReturnsCorrectlyFormattedDuration(int seconds, string expected)
     {
         var result = DurationFormatter.Format(seconds);
+
         result.Should().Be(expected);
     }
 }

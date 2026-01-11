@@ -19,16 +19,13 @@ public class OmdbMetadataProviderTests
     [Fact]
     public async Task LookupAsync_ReturnsMetadata_WhenMovieFound()
     {
-        // Arrange
         var json = @"{""Response"":""True"",""Title"":""Inception"",""Year"":""2010"",""Type"":""movie""}";
         var httpClient = CreateHttpClient(json);
         var notifier = Substitute.For<IProgressNotifier>();
         var provider = new OmdbMetadataProvider(httpClient, "test-key", notifier);
 
-        // Act
         var result = await provider.LookupAsync("inception", isTv: false, year: null);
 
-        // Assert
         result.Should().NotBeNull();
         result!.Title.Should().Be("Inception");
         result.Year.Should().Be(2010);
@@ -38,16 +35,13 @@ public class OmdbMetadataProviderTests
     [Fact]
     public async Task LookupAsync_ReturnsMetadata_WhenTvSeriesFound()
     {
-        // Arrange
         var json = @"{""Response"":""True"",""Title"":""Breaking Bad"",""Year"":""2008-2013"",""Type"":""series""}";
         var httpClient = CreateHttpClient(json);
         var notifier = Substitute.For<IProgressNotifier>();
         var provider = new OmdbMetadataProvider(httpClient, "test-key", notifier);
 
-        // Act
         var result = await provider.LookupAsync("breaking bad", isTv: true, year: 2008);
 
-        // Assert
         result.Should().NotBeNull();
         result!.Title.Should().Be("Breaking Bad");
         result.Year.Should().Be(2008);
@@ -57,55 +51,45 @@ public class OmdbMetadataProviderTests
     [Fact]
     public async Task LookupAsync_ReturnsNull_WhenResponseIsFalse()
     {
-        // Arrange
         var json = @"{""Response"":""False"",""Error"":""Movie not found!""}";
         var httpClient = CreateHttpClient(json);
         var notifier = Substitute.For<IProgressNotifier>();
         var provider = new OmdbMetadataProvider(httpClient, "test-key", notifier);
 
-        // Act
         var result = await provider.LookupAsync("nonexistent movie", isTv: false, year: null);
 
-        // Assert
         result.Should().BeNull();
     }
 
     [Fact]
     public async Task LookupAsync_ReturnsNull_WhenJsonMalformed()
     {
-        // Arrange
         var json = @"{invalid json}";
         var httpClient = CreateHttpClient(json);
         var notifier = Substitute.For<IProgressNotifier>();
         var provider = new OmdbMetadataProvider(httpClient, "test-key", notifier);
 
-        // Act
         var result = await provider.LookupAsync("test", isTv: false, year: null);
 
-        // Assert
         result.Should().BeNull();
     }
 
     [Fact]
     public async Task LookupAsync_ReturnsNull_WhenHttpRequestFails()
     {
-        // Arrange
         var handler = new FakeHttpMessageHandler(HttpStatusCode.ServiceUnavailable);
         var httpClient = new HttpClient(handler);
         var notifier = Substitute.For<IProgressNotifier>();
         var provider = new OmdbMetadataProvider(httpClient, "test-key", notifier);
 
-        // Act
         var result = await provider.LookupAsync("test", isTv: false, year: null);
 
-        // Assert
         result.Should().BeNull();
     }
 
     [Fact]
     public void Name_ReturnsOMDB()
     {
-        // Arrange
         var httpClient = new HttpClient();
         var notifier = Substitute.For<IProgressNotifier>();
         var provider = new OmdbMetadataProvider(httpClient, "test-key", notifier);
@@ -117,17 +101,14 @@ public class OmdbMetadataProviderTests
     [Fact]
     public async Task LookupAsync_IncludesYear_WhenProvided()
     {
-        // Arrange
         var json = @"{""Response"":""True"",""Title"":""Dune"",""Year"":""2021"",""Type"":""movie""}";
         var handler = new FakeHttpMessageHandler(json);
         var httpClient = new HttpClient(handler);
         var notifier = Substitute.For<IProgressNotifier>();
         var provider = new OmdbMetadataProvider(httpClient, "test-key", notifier);
 
-        // Act
         await provider.LookupAsync("dune", isTv: false, year: 2021);
 
-        // Assert
         handler.RequestUri.Should().NotBeNull();
         var url = handler.RequestUri!.ToString();
         url.Should().Contain("&y=2021");
@@ -136,16 +117,13 @@ public class OmdbMetadataProviderTests
     [Fact]
     public async Task LookupAsync_HandlesYearParsingFailure()
     {
-        // Arrange
         var json = @"{""Response"":""True"",""Title"":""Test"",""Year"":""N/A"",""Type"":""movie""}";
         var httpClient = CreateHttpClient(json);
         var notifier = Substitute.For<IProgressNotifier>();
         var provider = new OmdbMetadataProvider(httpClient, "test-key", notifier);
 
-        // Act
         var result = await provider.LookupAsync("test", isTv: false, year: 2020);
 
-        // Assert
         result.Should().NotBeNull();
         result!.Year.Should().Be(2020); // Falls back to provided year
     }

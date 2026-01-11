@@ -32,17 +32,14 @@ public class MetadataServiceTests : IDisposable
     [Fact]
     public async Task LookupAsync_Fallbacks_WhenNoApiKeys()
     {
-        // Arrange
         Environment.SetEnvironmentVariable("OMDB_API_KEY", null);
         Environment.SetEnvironmentVariable("TMDB_API_KEY", null);
         var notifier = Substitute.For<IProgressNotifier>();
         var providers = new List<IMetadataProvider>();
         var svc = new MetadataService(providers, notifier);
 
-        // Act
         var md = await svc.LookupAsync("SIMPSONS_WS", isTv: false, year: null);
 
-        // Assert
         md.Should().NotBeNull();
         md!.Title.Should().Be("SIMPSONS_WS");
         md.Type.Should().Be("movie");
@@ -52,7 +49,6 @@ public class MetadataServiceTests : IDisposable
     [Fact]
     public async Task LookupAsync_ReturnsFromFirstProvider_WhenMatch()
     {
-        // Arrange
         var notifier = Substitute.For<IProgressNotifier>();
         var provider1 = Substitute.For<IMetadataProvider>();
         provider1.Name.Returns("Provider1");
@@ -64,10 +60,8 @@ public class MetadataServiceTests : IDisposable
         var providers = new List<IMetadataProvider> { provider1, provider2 };
         var svc = new MetadataService(providers, notifier);
 
-        // Act
         var result = await svc.LookupAsync("test", isTv: false, year: null);
 
-        // Assert
         result.Should().NotBeNull();
         result!.Title.Should().Be("Test Movie");
         await provider1.Received(1).LookupAsync("test", false, null);
@@ -78,7 +72,6 @@ public class MetadataServiceTests : IDisposable
     [Fact]
     public async Task LookupAsync_TriesSecondProvider_WhenFirstReturnsNull()
     {
-        // Arrange
         var notifier = Substitute.For<IProgressNotifier>();
         var provider1 = Substitute.For<IMetadataProvider>();
         provider1.Name.Returns("Provider1");
@@ -91,10 +84,8 @@ public class MetadataServiceTests : IDisposable
         var providers = new List<IMetadataProvider> { provider1, provider2 };
         var svc = new MetadataService(providers, notifier);
 
-        // Act
         var result = await svc.LookupAsync("test", isTv: false, year: null);
 
-        // Assert
         result.Should().NotBeNull();
         result!.Title.Should().Be("Test Movie");
         await provider1.Received(1).LookupAsync("test", false, null);
@@ -105,7 +96,6 @@ public class MetadataServiceTests : IDisposable
     [Fact]
     public async Task LookupAsync_UsesTitleVariations_WhenOriginalFails()
     {
-        // Arrange
         var notifier = Substitute.For<IProgressNotifier>();
         var provider = Substitute.For<IMetadataProvider>();
         provider.Name.Returns("TestProvider");
@@ -115,10 +105,8 @@ public class MetadataServiceTests : IDisposable
         var providers = new List<IMetadataProvider> { provider };
         var svc = new MetadataService(providers, notifier);
 
-        // Act
         var result = await svc.LookupAsync("MOVIE_TITLE_2023", isTv: false, year: null);
 
-        // Assert
         result.Should().NotBeNull();
         result!.Title.Should().Be("Movie Title");
         await provider.Received(1).LookupAsync("MOVIE_TITLE_2023", false, null);
@@ -129,7 +117,6 @@ public class MetadataServiceTests : IDisposable
     [Fact]
     public async Task LookupAsync_ShowsDifferentMessage_ForSimplifiedTitle()
     {
-        // Arrange
         var notifier = Substitute.For<IProgressNotifier>();
         var provider = Substitute.For<IMetadataProvider>();
         provider.Name.Returns("TestProvider");
@@ -139,10 +126,8 @@ public class MetadataServiceTests : IDisposable
         var providers = new List<IMetadataProvider> { provider };
         var svc = new MetadataService(providers, notifier);
 
-        // Act
         await svc.LookupAsync("SIMPSONS_WS", isTv: true, year: null);
 
-        // Assert
         notifier.Received(1).Success(Arg.Is<string>(s =>
             s.Contains("simplified title 'SIMPSONS'") &&
             s.Contains("The Simpsons") &&
@@ -152,7 +137,6 @@ public class MetadataServiceTests : IDisposable
     [Fact]
     public async Task LookupAsync_ShowsNormalMessage_ForOriginalTitle()
     {
-        // Arrange
         var notifier = Substitute.For<IProgressNotifier>();
         var provider = Substitute.For<IMetadataProvider>();
         provider.Name.Returns("TestProvider");
@@ -161,10 +145,8 @@ public class MetadataServiceTests : IDisposable
         var providers = new List<IMetadataProvider> { provider };
         var svc = new MetadataService(providers, notifier);
 
-        // Act
         await svc.LookupAsync("Test Movie", isTv: false, year: null);
 
-        // Assert
         notifier.Received(1).Success(Arg.Is<string>(s =>
             !s.Contains("simplified") &&
             s.Contains("Test Movie") &&
