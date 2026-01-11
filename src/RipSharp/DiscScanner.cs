@@ -9,11 +9,13 @@ public class DiscScanner : IDiscScanner
 {
     private readonly IProcessRunner _runner;
     private readonly IProgressNotifier _notifier;
+    private readonly IDiscTypeDetector _typeDetector;
 
-    public DiscScanner(IProcessRunner runner, IProgressNotifier notifier)
+    public DiscScanner(IProcessRunner runner, IProgressNotifier notifier, IDiscTypeDetector typeDetector)
     {
         _runner = runner;
         _notifier = notifier;
+        _typeDetector = typeDetector;
     }
 
     public async Task<DiscInfo?> ScanDiscAsync(string discPath)
@@ -34,13 +36,18 @@ public class DiscScanner : IDiscScanner
         return BuildDiscInfo(handler.DiscName, handler.DiscType, titles);
     }
 
-    private static DiscInfo BuildDiscInfo(string? discName, string? discType, List<TitleInfo> titles)
+    private DiscInfo BuildDiscInfo(string? discName, string? discType, List<TitleInfo> titles)
     {
+        var detectedContentType = _typeDetector.DetectContentType(new DiscInfo { Titles = titles });
+        var confidence = _typeDetector.LastDetectionConfidence;
+
         return new DiscInfo
         {
             DiscName = discName ?? string.Empty,
             DiscType = NormalizeDiscType(discType),
-            Titles = titles
+            Titles = titles,
+            DetectedContentType = detectedContentType,
+            DetectionConfidence = confidence
         };
     }
 

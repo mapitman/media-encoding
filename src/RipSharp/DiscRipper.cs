@@ -65,6 +65,22 @@ public class DiscRipper : IDiscRipper
             _notifier.Error("Failed to scan disc");
             return (new DiscInfo { Titles = new List<TitleInfo>() }, null);
         }
+
+        // Use auto-detected content type if requested
+        if (options.AutoDetect && discInfo.DetectedContentType.HasValue)
+        {
+            var contentType = discInfo.DetectedContentType.Value ? "TV series" : "movie";
+            var emoji = discInfo.DetectedContentType.Value ? "\ud83d\udcfb " : "\ud83c\udfac "; // 📺 for TV, 🎬 for movie
+            var confidencePercent = (int)(discInfo.DetectionConfidence * 100);
+            _notifier.Info($"{emoji}Detected as {contentType} (confidence: {confidencePercent}%)");
+            options.Tv = discInfo.DetectedContentType.Value;
+        }
+        else if (options.AutoDetect)
+        {
+            _notifier.Warning($"Could not confidently detect content type. Defaulting to movie. Consider specifying --mode explicitly.");
+            options.Tv = false;
+        }
+
         var titleForMeta = options.Title ?? discInfo.DiscName;
         if (string.IsNullOrWhiteSpace(titleForMeta))
         {

@@ -30,6 +30,7 @@ public class Program
                 services.AddSingleton<IProcessRunner, ProcessRunner>();
                 services.AddSingleton<IMakeMkvService, MakeMkvService>();
                 services.AddSingleton<IDiscScanner, DiscScanner>();
+                services.AddSingleton<IDiscTypeDetector, DiscTypeDetector>();
 
                 // Register metadata providers
                 var omdbKey = Environment.GetEnvironmentVariable("OMDB_API_KEY");
