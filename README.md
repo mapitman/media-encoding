@@ -195,6 +195,75 @@ Example: `Breaking Bad - S01E01 - Pilot.mkv`, `The Legend of Korra - S01E01 - We
 - **Audio:** All English stereo (2ch) and surround (5.1+) tracks
 - **Subtitles:** All English subtitle tracks
 
+## Metadata APIs
+
+RipSharp uses multiple metadata APIs to look up accurate titles, years, and episode information. While API keys are optional, they significantly improve the accuracy of file naming.
+
+### The Movie Database (TMDB)
+
+**Purpose:** Primary source for movie and TV series metadata (titles, years, series information)
+
+**Website:** https://www.themoviedb.org/
+
+**Getting an API Key:**
+1. Create a free account at https://www.themoviedb.org/signup
+2. Go to Settings → API: https://www.themoviedb.org/settings/api
+3. Request an API key (choose "Developer" option)
+4. Accept the terms and provide basic information about your use
+5. Copy your API Key (v3 auth)
+
+**Cost:** Free for personal, non-commercial use
+
+**Set in environment:**
+```bash
+export TMDB_API_KEY="your_api_key_here"
+```
+
+### Open Movie Database (OMDB)
+
+**Purpose:** Fallback metadata source for movies and TV series
+
+**Website:** http://www.omdbapi.com/
+
+**Getting an API Key:**
+1. Visit http://www.omdbapi.com/apikey.aspx
+2. Select a plan (Free tier: 1,000 requests/day)
+3. Enter your email address
+4. Verify your email and activate the key
+
+**Cost:** Free tier available (1,000 daily requests); paid tiers for higher volume
+
+**Set in environment:**
+```bash
+export OMDB_API_KEY="your_api_key_here"
+```
+
+### TheTVDB
+
+**Purpose:** TV episode titles for accurate episode naming
+
+**Website:** https://thetvdb.com/
+
+**Getting an API Key:**
+1. Create a free account at https://thetvdb.com/auth/register
+2. Log in and go to your API keys page: https://thetvdb.com/dashboard/account/apikeys
+3. Create a new API key (v4 API)
+4. Copy the API key
+
+**Cost:** Free for personal use
+
+**Set in environment:**
+```bash
+export TVDB_API_KEY="your_api_key_here"
+```
+
+### Metadata Lookup Behavior
+
+- **Movies:** Queries OMDB first, then TMDB as fallback
+- **TV Series:** Uses OMDB/TMDB for series name and year; queries TVDB for individual episode titles
+- **Fallback:** If no API keys are set or lookup fails, uses disc title or generic naming
+- **Episode Titles:** Without TVDB key, episodes are named `S##E##` without episode titles
+
 ## Troubleshooting
 
 ### "Missing required tools" error
