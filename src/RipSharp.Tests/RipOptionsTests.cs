@@ -166,6 +166,7 @@ public class RipOptionsTests
         var result = RipOptions.ParseArgs(args);
 
         result.Tv.Should().BeTrue();
+        result.AutoDetect.Should().BeFalse();
     }
 
     [Fact]
@@ -176,6 +177,7 @@ public class RipOptionsTests
         var result = RipOptions.ParseArgs(args);
 
         result.Tv.Should().BeTrue();
+        result.AutoDetect.Should().BeFalse();
     }
 
     [Fact]
@@ -187,6 +189,27 @@ public class RipOptionsTests
 
         result.AutoDetect.Should().BeTrue();
         result.Tv.Should().BeFalse();
+    }
+
+    [Fact]
+    public void ParseArgs_WithModeDetect_SetsAutoDetectTrue()
+    {
+        var args = new[] { "--output", "/tmp/movies", "--mode", "detect" };
+
+        var result = RipOptions.ParseArgs(args);
+
+        result.AutoDetect.Should().BeTrue();
+    }
+
+    [Fact]
+    public void ParseArgs_WithModeNoValue_ThrowsException()
+    {
+        var args = new[] { "--output", "/tmp/movies", "--mode" };
+
+        Action act = () => RipOptions.ParseArgs(args);
+
+        act.Should().Throw<ArgumentException>()
+            .WithMessage("--mode requires a value");
     }
 
     [Fact]

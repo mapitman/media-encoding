@@ -40,18 +40,21 @@ public class RipOptions
                 case "--temp": opts.Temp = next(); break;
                 case "--tv": opts.Tv = true; opts.AutoDetect = false; break;
                 case "--mode":
-                    var mode = next()?.ToLowerInvariant();
-                    if (mode == "tv" || mode == "series") 
+                    var mode = next();
+                    if (mode == null)
+                        throw new ArgumentException("--mode requires a value");
+                    var modeLower = mode.ToLowerInvariant();
+                    if (modeLower == "tv" || modeLower == "series") 
                     { 
                         opts.Tv = true; 
                         opts.AutoDetect = false;
                     }
-                    else if (mode == "movie" || mode == "film") 
+                    else if (modeLower == "movie" || modeLower == "film") 
                     { 
                         opts.Tv = false;
                         opts.AutoDetect = false;
                     }
-                    else if (mode == "auto" || mode == "detect")
+                    else if (modeLower == "auto" || modeLower == "detect")
                     {
                         opts.AutoDetect = true;
                     }

@@ -38,8 +38,7 @@ public class DiscScanner : IDiscScanner
 
     private DiscInfo BuildDiscInfo(string? discName, string? discType, List<TitleInfo> titles)
     {
-        var detectedContentType = _typeDetector.DetectContentType(new DiscInfo { Titles = titles });
-        var confidence = _typeDetector.LastDetectionConfidence;
+        var (detectedContentType, confidence) = _typeDetector.DetectContentType(new DiscInfo { Titles = titles });
 
         return new DiscInfo
         {

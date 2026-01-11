@@ -9,11 +9,6 @@ public interface IDiscTypeDetector
     /// Detects whether a disc contains a movie or TV series based on its structure.
     /// </summary>
     /// <param name="discInfo">The disc information containing titles and metadata.</param>
-    /// <returns>True if detected as TV series, false if detected as movie, null if detection is uncertain.</returns>
-    bool? DetectContentType(DiscInfo discInfo);
-
-    /// <summary>
-    /// Gets the confidence score of the last detection (0.0 to 1.0).
-    /// </summary>
-    double LastDetectionConfidence { get; }
+    /// <returns>Tuple of (isTV, confidence): True if detected as TV series, false if detected as movie, null if detection is uncertain, along with confidence score (0.0-1.0).</returns>
+    (bool? isTV, double confidence) DetectContentType(DiscInfo discInfo);
 }

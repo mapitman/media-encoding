@@ -9,13 +9,6 @@ namespace RipSharp;
 /// </summary>
 public class DiscTypeDetector : IDiscTypeDetector
 {
-    private double _lastDetectionConfidence;
-
-    /// <summary>
-    /// Gets the confidence score of the last detection (0.0 to 1.0).
-    /// </summary>
-    public double LastDetectionConfidence => _lastDetectionConfidence;
-
     /// <summary>
     /// Detects whether a disc contains a movie or TV series based on its structure.
     /// Movies are characterized by:
@@ -24,27 +17,23 @@ public class DiscTypeDetector : IDiscTypeDetector
     /// - Clear separation (main feature vs bonus content)
     /// </summary>
     /// <param name="discInfo">The disc information containing titles and metadata.</param>
-    /// <returns>True if detected as TV series, false if detected as movie, null if detection is uncertain.</returns>
-    public bool? DetectContentType(DiscInfo discInfo)
+    /// <returns>Tuple of (isTV, confidence): True if detected as TV series, false if detected as movie, null if detection is uncertain, along with confidence score (0.0-1.0).</returns>
+    public (bool? isTV, double confidence) DetectContentType(DiscInfo discInfo)
     {
-        _lastDetectionConfidence = 0.0;
-
         if (discInfo.Titles == null || discInfo.Titles.Count == 0)
-            return null;
+            return (null, 0.0);
 
         // Single title is almost always a movie
         if (discInfo.Titles.Count == 1)
         {
-            _lastDetectionConfidence = 0.95;
-            return false;
+            return (false, 0.95);
         }
 
         // Two titles are likely a movie (main feature + bonus)
         if (discInfo.Titles.Count == 2)
         {
             var (isMovie, confidence) = AnalyzeTwoTitles(discInfo.Titles);
-            _lastDetectionConfidence = confidence;
-            return isMovie ? false : null; // Return false for movie, null for uncertain
+            return (isMovie ? false : null, confidence); // Return false for movie, null for uncertain
         }
 
         // For 3+ titles, analyze duration consistency and patterns
@@ -60,12 +49,15 @@ public class DiscTypeDetector : IDiscTypeDetector
         if (titles.Count != 2)
             return (false, 0.0);
 
-        var durations = titles.OrderByDescending(t => t.DurationSeconds).ToList();
-        var longerDuration = durations[0].DurationSeconds;
-        var shorterDuration = durations[1].DurationSeconds;
+        var longerDuration = Math.Max(titles[0].DurationSeconds, titles[1].DurationSeconds);
+        var shorterDuration = Math.Min(titles[0].DurationSeconds, titles[1].DurationSeconds);
+
+        // Filter out zero-duration titles
+        if (longerDuration == 0)
+            return (false, 0.3); // Uncertain
 
         // If longer title is significantly longer (at least 3x), likely movie + bonus
-        if (longerDuration >= shorterDuration * 3)
+        if (shorterDuration > 0 && longerDuration >= shorterDuration * 3)
         {
             return (true, 0.85);
         }
@@ -86,10 +78,10 @@ public class DiscTypeDetector : IDiscTypeDetector
     /// Analyzes a disc with 3 or more titles.
     /// Movies typically have 1-2 titles; TV series have multiple similar-length titles.
     /// </summary>
-    private bool? AnalyzeMultipleTitles(List<TitleInfo> titles)
+    private (bool? isTV, double confidence) AnalyzeMultipleTitles(List<TitleInfo> titles)
     {
         if (titles.Count < 3)
-            return null;
+            return (null, 0.5);
 
         var durations = titles.Select(t => t.DurationSeconds).OrderBy(d => d).ToList();
 
@@ -107,35 +99,36 @@ public class DiscTypeDetector : IDiscTypeDetector
         if (tvLikely.Count >= 3 && tvLikely.Count >= titles.Count * 0.6)
         {
             var tvDurations = tvLikely.Select(t => t.DurationSeconds).ToList();
-            var tvStdDev = Math.Sqrt(CalculateVariance(tvDurations));
             var tvAvg = tvDurations.Average();
-            var cv = tvStdDev / tvAvg; // coefficient of variation
-
-            if (cv < 0.15)
+            
+            // Guard against division by zero
+            if (tvAvg > 0)
             {
-                _lastDetectionConfidence = 0.92;
-                return true;
-            }
+                var tvStdDev = Math.Sqrt(CalculateVariance(tvDurations));
+                var cv = tvStdDev / tvAvg; // coefficient of variation
 
-            if (cv < 0.25)
-            {
-                _lastDetectionConfidence = 0.78;
-                return true;
+                if (cv < 0.15)
+                {
+                    return (true, 0.92);
+                }
+
+                if (cv < 0.25)
+                {
+                    return (true, 0.78);
+                }
             }
         }
 
         // If there is one very long title and many shorts, likely a movie with bonus content
         if (longTitles.Count == 1 && shortTitles.Count >= 2 && titles.Count >= 4)
         {
-            _lastDetectionConfidence = 0.85;
-            return false;
+            return (false, 0.85);
         }
 
         // If there are 2 long titles and few tv-length titles, treat as movie (alt cuts)
         if (longTitles.Count == 2 && tvLikely.Count <= 1)
         {
-            _lastDetectionConfidence = 0.75;
-            return false;
+            return (false, 0.75);
         }
 
         // If all titles are substantial (no shorts) and low variance overall, lean TV
@@ -143,27 +136,29 @@ public class DiscTypeDetector : IDiscTypeDetector
         if (substantial.Count >= 3 && shortTitles.Count == 0)
         {
             var substDurations = substantial.Select(t => t.DurationSeconds).ToList();
-            var stdDev = Math.Sqrt(CalculateVariance(substDurations));
             var avg = substDurations.Average();
-            var cv = stdDev / avg;
-
-            if (cv < 0.18)
+            
+            // Guard against division by zero
+            if (avg > 0)
             {
-                _lastDetectionConfidence = 0.8;
-                return true;
+                var stdDev = Math.Sqrt(CalculateVariance(substDurations));
+                var cv = stdDev / avg;
+
+                if (cv < 0.18)
+                {
+                    return (true, 0.8);
+                }
             }
         }
 
         // Movie default when many shorts and few substantial titles
         if (shortTitles.Count >= 3 && substantial.Count <= 2)
         {
-            _lastDetectionConfidence = 0.7;
-            return false;
+            return (false, 0.7);
         }
 
         // Uncertain
-        _lastDetectionConfidence = 0.5;
-        return null;
+        return (null, 0.5);
     }
 
     /// <summary>

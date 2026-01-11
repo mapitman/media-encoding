@@ -84,6 +84,7 @@ public class DiscRipper : IDiscRipper
             else
             {
                 // Low confidence or uncertain - prompt user
+                // Note: Modifying options.Tv in-place based on detection result or user's choice
                 string? detectionHint = null;
                 if (discInfo.DetectedContentType.HasValue)
                 {
