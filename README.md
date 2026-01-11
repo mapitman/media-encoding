@@ -4,23 +4,35 @@ Automatic DVD, Blu-Ray, and UltraHD Blu-Ray ripping tool with intelligent metada
 
 ## Quick Start
 
+### 1) Install MakeMKV, FFmpeg, and .NET SDK 10+
+
+See [Requirements](#requirements)
+
+### 2) View help
+
 ```bash
-# 1) Install MakeMKV, FFmpeg, and .NET SDK 10+ (see Requirements)
-
-# 2) View help
 dotnet run --project src/RipSharp -- --help
+```
 
-# 3) Set API keys (optional but recommended)
+### 3) Set API keys (optional but recommended)
+
+```bash
 export TMDB_API_KEY="your_key_here"
 export OMDB_API_KEY="your_key_here"
 # Optional: TVDB (for episode titles) — implementation in progress (issue #37)
 export TVDB_API_KEY="your_key_here"
+```
 
-# 4) Rip a movie (mode optional; auto-detect is default)
+### 4) Rip a movie (mode optional; auto-detect is default)
+
+```bash
 dotnet run --project src/RipSharp -- --output ~/Movies
 dotnet run --project src/RipSharp -- --output ~/Movies --mode movie   # explicit
+```
 
-# 5) Rip a TV season
+### 5) Rip a TV season
+
+```bash
 dotnet run --project src/RipSharp -- --output ~/TV --mode tv --title "Breaking Bad" --season 1
 ```
 

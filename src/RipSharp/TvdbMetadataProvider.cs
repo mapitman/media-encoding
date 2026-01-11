@@ -90,8 +90,8 @@ public class TvdbMetadataProvider : IMetadataProvider, ITvEpisodeTitleProvider
             return (null, null, null);
 
         var first = data[0];
-        var id = first.TryGetProperty("tvdb_id", out var idEl) && idEl.TryGetInt32(out var sid) ? sid :
-                 first.TryGetProperty("id", out var idAlt) && idAlt.TryGetInt32(out var sidAlt) ? sidAlt : (int?)null;
+        var id = first.TryGetProperty("tvdb_id", out var idEl) && TryGetInt32Flexible(idEl, out var sid) ? sid :
+             first.TryGetProperty("id", out var idAlt) && TryGetInt32Flexible(idAlt, out var sidAlt) ? sidAlt : (int?)null;
         var name = first.TryGetProperty("name", out var nameEl) ? nameEl.GetString() : title;
         int? foundYear = null;
         if (first.TryGetProperty("first_air_time", out var fa) && fa.GetString() is string faStr && faStr.Length >= 4 && int.TryParse(faStr.Substring(0, 4), out var fy))
@@ -101,6 +101,18 @@ public class TvdbMetadataProvider : IMetadataProvider, ITvEpisodeTitleProvider
         if (id != null)
             _seriesCache[cacheKey] = result;
         return result;
+    }
+
+    private static bool TryGetInt32Flexible(JsonElement element, out int value)
+    {
+        if (element.ValueKind == JsonValueKind.Number && element.TryGetInt32(out value))
+            return true;
+
+        if (element.ValueKind == JsonValueKind.String && int.TryParse(element.GetString(), out value))
+            return true;
+
+        value = default;
+        return false;
     }
 
     private async Task<string?> FetchEpisodeTitleAsync(int seriesId, int season, int episode)
