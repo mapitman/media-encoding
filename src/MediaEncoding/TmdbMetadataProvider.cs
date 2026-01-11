@@ -24,10 +24,7 @@ public class TmdbMetadataProvider : IMetadataProvider
     {
         try
         {
-            if (isTv)
-                return await LookupTvAsync(title, year);
-            else
-                return await LookupMovieAsync(title, year);
+            return await (isTv ? LookupTvAsync(title, year) : LookupMovieAsync(title, year));
         }
         catch { }
         return null;
