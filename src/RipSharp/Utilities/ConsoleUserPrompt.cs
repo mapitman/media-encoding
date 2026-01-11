@@ -26,9 +26,9 @@ public class ConsoleUserPrompt : IUserPrompt
         {
             message += $" ({detectionHint})";
         }
-        
+
         _notifier.Warning(message);
-        
+
         var selection = AnsiConsole.Prompt(
             new SelectionPrompt<string>()
                 .Title("What type of content is this?")
@@ -38,7 +38,7 @@ public class ConsoleUserPrompt : IUserPrompt
         var isTv = selection == "TV Series";
         var mode = isTv ? "TV series" : "movie";
         _notifier.Info($"Using {mode} mode");
-        
+
         return isTv;
     }
 }

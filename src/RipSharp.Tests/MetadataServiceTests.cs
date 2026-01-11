@@ -1,9 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+
 using AwesomeAssertions;
-using RipSharp;
+
 using NSubstitute;
+
+using RipSharp;
+
 using Xunit;
 
 namespace RipSharp.Tests;
@@ -53,10 +57,10 @@ public class MetadataServiceTests : IDisposable
         var provider1 = Substitute.For<IMetadataProvider>();
         provider1.Name.Returns("Provider1");
         provider1.LookupAsync("test", false, null).Returns(new MetadataInfo { Title = "Test Movie", Year = 2020, Type = "movie" });
-        
+
         var provider2 = Substitute.For<IMetadataProvider>();
         provider2.Name.Returns("Provider2");
-        
+
         var providers = new List<IMetadataProvider> { provider1, provider2 };
         var svc = new MetadataService(providers, notifier);
 
@@ -79,11 +83,11 @@ public class MetadataServiceTests : IDisposable
         var provider1 = Substitute.For<IMetadataProvider>();
         provider1.Name.Returns("Provider1");
         provider1.LookupAsync("test", false, null).Returns((MetadataInfo?)null);
-        
+
         var provider2 = Substitute.For<IMetadataProvider>();
         provider2.Name.Returns("Provider2");
         provider2.LookupAsync("test", false, null).Returns(new MetadataInfo { Title = "Test Movie", Year = 2021, Type = "movie" });
-        
+
         var providers = new List<IMetadataProvider> { provider1, provider2 };
         var svc = new MetadataService(providers, notifier);
 
@@ -107,7 +111,7 @@ public class MetadataServiceTests : IDisposable
         provider.Name.Returns("TestProvider");
         provider.LookupAsync("MOVIE_TITLE_2023", Arg.Any<bool>(), Arg.Any<int?>()).Returns((MetadataInfo?)null);
         provider.LookupAsync("MOVIE_TITLE", Arg.Any<bool>(), Arg.Any<int?>()).Returns(new MetadataInfo { Title = "Movie Title", Year = 2023, Type = "movie" });
-        
+
         var providers = new List<IMetadataProvider> { provider };
         var svc = new MetadataService(providers, notifier);
 
@@ -131,7 +135,7 @@ public class MetadataServiceTests : IDisposable
         provider.Name.Returns("TestProvider");
         provider.LookupAsync("SIMPSONS_WS", Arg.Any<bool>(), Arg.Any<int?>()).Returns((MetadataInfo?)null);
         provider.LookupAsync("SIMPSONS", Arg.Any<bool>(), Arg.Any<int?>()).Returns(new MetadataInfo { Title = "The Simpsons", Year = 1989, Type = "tv" });
-        
+
         var providers = new List<IMetadataProvider> { provider };
         var svc = new MetadataService(providers, notifier);
 
@@ -139,8 +143,8 @@ public class MetadataServiceTests : IDisposable
         await svc.LookupAsync("SIMPSONS_WS", isTv: true, year: null);
 
         // Assert
-        notifier.Received(1).Success(Arg.Is<string>(s => 
-            s.Contains("simplified title 'SIMPSONS'") && 
+        notifier.Received(1).Success(Arg.Is<string>(s =>
+            s.Contains("simplified title 'SIMPSONS'") &&
             s.Contains("The Simpsons") &&
             s.Contains("(1989)")));
     }
@@ -153,7 +157,7 @@ public class MetadataServiceTests : IDisposable
         var provider = Substitute.For<IMetadataProvider>();
         provider.Name.Returns("TestProvider");
         provider.LookupAsync("Test Movie", Arg.Any<bool>(), Arg.Any<int?>()).Returns(new MetadataInfo { Title = "Test Movie", Year = 2020, Type = "movie" });
-        
+
         var providers = new List<IMetadataProvider> { provider };
         var svc = new MetadataService(providers, notifier);
 
@@ -161,8 +165,8 @@ public class MetadataServiceTests : IDisposable
         await svc.LookupAsync("Test Movie", isTv: false, year: null);
 
         // Assert
-        notifier.Received(1).Success(Arg.Is<string>(s => 
-            !s.Contains("simplified") && 
+        notifier.Received(1).Success(Arg.Is<string>(s =>
+            !s.Contains("simplified") &&
             s.Contains("Test Movie") &&
             s.Contains("(2020)")));
     }

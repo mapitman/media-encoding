@@ -2,8 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+
 using Spectre.Console;
 
 namespace RipSharp.Services;
@@ -74,7 +75,7 @@ public class DiscRipper : IDiscRipper
         if (options.AutoDetect)
         {
             const double minConfidenceThreshold = 0.70;
-            
+
             if (discInfo.DetectedContentType.HasValue && discInfo.DetectionConfidence >= minConfidenceThreshold)
             {
                 var contentType = discInfo.DetectedContentType.Value ? "TV series" : "movie";
@@ -94,7 +95,7 @@ public class DiscRipper : IDiscRipper
                     var confidencePercent = (int)(discInfo.DetectionConfidence * 100);
                     detectionHint = $"detected as {contentType} with {confidencePercent}% confidence";
                 }
-                
+
                 options.Tv = _userPrompt.PromptForContentType(detectionHint);
             }
         }

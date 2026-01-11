@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading.Tasks;
+
 using Spectre.Console;
 
 namespace RipSharp.Services;
@@ -138,7 +139,7 @@ public class EncoderService : IEncoderService
         else
         {
             // Filter out other progress lines
-            bool IsProgressLine(string s) =>
+            static bool IsProgressLine(string s) =>
                 s.StartsWith("frame=") || s.StartsWith("fps=") || s.StartsWith("stream_") ||
                 s.StartsWith("bitrate=") || s.StartsWith("total_size=") || s.StartsWith("out_time") ||
                 s.StartsWith("dup_frames=") || s.StartsWith("drop_frames=") || s.StartsWith("progress=");

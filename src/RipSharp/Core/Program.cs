@@ -4,10 +4,13 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+
 using NetEscapades.Configuration.Yaml;
+
 using Spectre.Console;
 
 namespace RipSharp.Core;
@@ -69,13 +72,13 @@ public class Program
             .Build();
 
         var options = RipOptions.ParseArgs(args);
-        
+
         if (options.ShowHelp)
         {
             RipOptions.DisplayHelp();
             return 0;
         }
-        
+
         var ripper = host.Services.GetRequiredService<IDiscRipper>();
         var files = await ripper.ProcessDiscAsync(options);
 

@@ -98,7 +98,7 @@ public class DiscTypeDetector : IDiscTypeDetector
         {
             var tvDurations = tvLikely.Select(t => t.DurationSeconds).ToList();
             var tvAvg = tvDurations.Average();
-            
+
             // Guard against division by zero
             if (tvAvg > 0)
             {
@@ -135,7 +135,7 @@ public class DiscTypeDetector : IDiscTypeDetector
         {
             var substDurations = substantial.Select(t => t.DurationSeconds).ToList();
             var avg = substDurations.Average();
-            
+
             // Guard against division by zero
             if (avg > 0)
             {

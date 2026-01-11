@@ -21,14 +21,14 @@ public class RipOptions
     public static RipOptions ParseArgs(string[] args)
     {
         var opts = new RipOptions();
-        
+
         // Check for help first
         if (args.Length == 0 || args.Any(a => a == "-h" || a == "--help"))
         {
             opts.ShowHelp = true;
             return opts;
         }
-        
+
         for (int i = 0; i < args.Length; i++)
         {
             var a = args[i];
@@ -44,13 +44,13 @@ public class RipOptions
                     if (mode == null)
                         throw new ArgumentException("--mode requires a value");
                     var modeLower = mode.ToLowerInvariant();
-                    if (modeLower == "tv" || modeLower == "series") 
-                    { 
-                        opts.Tv = true; 
+                    if (modeLower == "tv" || modeLower == "series")
+                    {
+                        opts.Tv = true;
                         opts.AutoDetect = false;
                     }
-                    else if (modeLower == "movie" || modeLower == "film") 
-                    { 
+                    else if (modeLower == "movie" || modeLower == "film")
+                    {
                         opts.Tv = false;
                         opts.AutoDetect = false;
                     }

@@ -1,7 +1,10 @@
 using System;
 using System.IO;
+
 using AwesomeAssertions;
+
 using RipSharp;
+
 using Xunit;
 
 namespace RipSharp.Tests;

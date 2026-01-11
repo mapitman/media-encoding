@@ -1,5 +1,7 @@
 using System.Collections.Generic;
+
 using RipSharp;
+
 using Xunit;
 
 namespace RipSharp.Tests;

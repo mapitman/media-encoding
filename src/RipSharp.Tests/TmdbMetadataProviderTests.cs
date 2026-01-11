@@ -3,9 +3,13 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+
 using AwesomeAssertions;
-using RipSharp;
+
 using NSubstitute;
+
+using RipSharp;
+
 using Xunit;
 
 namespace RipSharp.Tests;

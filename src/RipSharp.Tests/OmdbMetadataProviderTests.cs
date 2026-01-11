@@ -3,9 +3,13 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+
 using AwesomeAssertions;
-using RipSharp;
+
 using NSubstitute;
+
+using RipSharp;
+
 using Xunit;
 
 namespace RipSharp.Tests;
@@ -172,7 +176,7 @@ public class OmdbMetadataProviderTests
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             RequestUri = request.RequestUri;
-            
+
             if (_statusCode != HttpStatusCode.OK)
             {
                 return Task.FromResult(new HttpResponseMessage(_statusCode));

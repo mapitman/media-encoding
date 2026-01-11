@@ -39,4 +39,3 @@ public class MetadataService : IMetadataService
         return new MetadataInfo { Title = title, Year = year, Type = isTv ? "tv" : "movie" };
     }
 }
-

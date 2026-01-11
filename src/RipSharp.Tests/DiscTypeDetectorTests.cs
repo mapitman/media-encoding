@@ -1,5 +1,7 @@
 using System.Collections.Generic;
+
 using RipSharp;
+
 using Xunit;
 
 namespace RipSharp.Tests;
@@ -105,7 +107,7 @@ public class DiscTypeDetectorTests
 
         // This scenario returns null (uncertain), not movie - adjusting expectation
         Assert.Null(isTV); // The mixed durations make detection uncertain
-        Assert.True(confidence < 0.70, 
+        Assert.True(confidence < 0.70,
             $"Expected confidence < 0.70, but got {confidence}");
     }
 
