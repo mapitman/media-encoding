@@ -100,7 +100,7 @@ public class DiscRipper : IDiscRipper
                 continue;
             }
 
-            _notifier.Info($"Ripping title {idx + 1} of {totalTitles} (Title ID: {titleId}){(string.IsNullOrWhiteSpace(titleName) ? "" : $" - {titleName}")}");
+            _notifier.Info($"Ripping title {idx + 1} of {totalTitles} (Title ID: {titleId}){(string.IsNullOrWhiteSpace(titleName) ? "" : $" - {titleName}")} [{DurationFormatter.Format(titleInfo?.DurationSeconds ?? 0)}]");
             var existingFiles = new HashSet<string>(Directory.EnumerateFiles(options.Temp!, "*.mkv"));
             var progressLogPath = Path.Combine(options.Temp!, $"progress_title_{titleId:D2}.log");
             if (File.Exists(progressLogPath)) File.Delete(progressLogPath);
@@ -225,6 +225,4 @@ public class DiscRipper : IDiscRipper
         }
         return finalFiles;
     }
-
-
 }
