@@ -36,15 +36,7 @@ public class Program
             cursorManager.RestoreCursor();
         };
 
-        try
-        {
-            return await RunAsync(args, cursorManager);
-        }
-        catch
-        {
-            cursorManager.RestoreCursor();
-            throw;
-        }
+        return await RunAsync(args, cursorManager);
     }
 
     private static async Task<int> RunAsync(string[] args, CursorManager cursorManager)
